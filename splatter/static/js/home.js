@@ -1,9 +1,4 @@
 
-// setup the sidenav functionality for mobile users
-$(document).ready(function(){
-    $('.sidenav').sidenav();
-});
-
 /**
     Set a value for a light on the hue server.
 
