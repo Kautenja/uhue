@@ -1,0 +1,12 @@
+{
+  "short_name": "Splatter",
+  "name": "Splatter",
+  "icons": [{
+    "src": "img/icon.png",
+    "type": "image/png",
+    "sizes": "192x192"
+  }],
+  "start_url": "/?utm_source=homescreen",
+  "background_color": "#707070",
+  "theme_color": "#fafafa"
+}
