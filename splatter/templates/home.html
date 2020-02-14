@@ -27,13 +27,26 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 
   <!-- theme color -->
-  <meta name="theme-color" content="#87CEEB">
+  <meta name="theme-color" content="#F1F1F1">
 </head>
 
 <body>
   <!--[if IE]>
     <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
   <![endif]-->
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo">Splatter</a>
+      <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <li class="active"><a href="#">Lights</a></li>
+        <li><a href="groups.html">Groups</a></li>
+        <li><a href="scenes.html">Scenes</a></li>
+        <li><a href="flows.html">Flows</a></li>
+      </ul>
+    </div>
+  </nav>
 
   <!-- show the lights -->
   <div class="cards">
