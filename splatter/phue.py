@@ -20,6 +20,7 @@ import os
 import platform
 import sys
 import socket
+from .colors import xy_bri_to_rgb, rgb_to_xy_bri
 if sys.version_info[0] > 2:
     PY3K = True
 else:
@@ -370,39 +371,23 @@ class Light(object):
         return self._state
 
     @property
-    def rgb_color(self):
+    def color(self):
         """Return the color as a hexadecimal value."""
-        x, y = self.xy
-        z = 1.0 - x - y
-        # calculate the XYZ values
-        Y = self.brightness / 255.0
-        X = (Y / y) * x
-        Z = (Y / y) * z
-        # calculate the RGB values using RGB D65 conversion
-        r =  X * 1.656492 - Y * 0.354851 - Z * 0.255038
-        g = -X * 0.707196 + Y * 1.655397 + Z * 0.036152
-        b =  X * 0.051713 - Y * 0.121364 + Z * 1.011530
+        return xy_bri_to_rgb(*self.xy, self.brightness)
 
-        import math
+    @color.setter
+    def color(self, value):
+        """
+        Set the color to a new RGB value.
 
-        if r <= 0.0031308:
-            r *= 12.92
-        else:
-            (1.0 + 0.055) * pow(r, (1.0 / 2.4)) - 0.055
-        if g <= 0.0031308:
-            g *= 12.92
-        else:
-            (1.0 + 0.055) * pow(g, (1.0 / 2.4)) - 0.055
-        if b <= 0.0031308:
-            b *= 12.92
-        else:
-            (1.0 + 0.055) * pow(b, (1.0 / 2.4)) - 0.055
+        Args:
+            value: the RGB value to set the color to
 
-        r = min(255, max(0, r * 255))
-        g = min(255, max(0, g * 255))
-        b = min(255, max(0, b * 255))
+        Returns:
+            None
 
-        return r, g, b
+        """
+        self.xy, self.brightness = rgb_to_xy_bri(value)
 
 
 class SensorState(dict):
