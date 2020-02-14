@@ -11,7 +11,7 @@ app = flask.Flask(__name__)
 
 # create the connection to the Hue bridge
 bridge = phue.Bridge()
-bridge.connect()
+# bridge.connect()
 
 
 @app.route('/site.webmanifest')

@@ -3,6 +3,7 @@ import os
 import json
 import platform
 import socket
+from .exceptions import PhueException, PhueRegistrationException, PhueRequestTimeout
 from .util import *
 from .light import Light
 from .group import Group
@@ -56,12 +57,6 @@ class Bridge(object):
         self.sensors_by_name = {}
         self._name = None
 
-        if os.path.exists(self.config_file_path):  # load the config file
-            with open(self.config_file_path, 'r') as config_file:
-                pass  # TODO
-        else:
-            pass
-
     def get_ip_address(self, set_result=False):
         """
         Get the bridge ip address from the meethue.com nupnp api.
@@ -88,37 +83,38 @@ class Bridge(object):
             if set_result:  # store the IP address as the IP for this bridge
                 self.ip = ip_address
             return ip_address
+
         # a bridge doesn't exist on the network interface
         return False
 
+    @property
+    def is_connected(self):
+        """Return true if connected to the bridge."""
+        return self.ip is not None and self.username is not None
+
     def connect(self):
-        """ Connect to the Hue bridge """
+        """Connect to the Hue bridge."""
         logger.info('Attempting to connect to the bridge...')
-        # If the ip and username were provided at class init
-        if self.ip is not None and self.username is not None:
+        if self.is_connected:  # already connected
             logger.info('Using ip: ' + self.ip)
             logger.info('Using username: ' + self.username)
             return
-
-        if self.ip is None or self.username is None:
-            try:
-                with open(self.config_file_path) as f:
-                    config = json.loads(f.read())
-                    if self.ip is None:
-                        self.ip = list(config.keys())[0]
-                        logger.info('Using ip from config: ' + self.ip)
-                    else:
-                        logger.info('Using ip: ' + self.ip)
-                    if self.username is None:
-                        self.username = config[self.ip]['username']
-                        logger.info(
-                            'Using username from config: ' + self.username)
-                    else:
-                        logger.info('Using username: ' + self.username)
-            except Exception as e:
-                logger.info(
-                    'Error opening config file, will attempt bridge registration')
-                self.register_app()
+        try:
+            with open(self.config_file_path) as config_file:
+                config = json.loads(config_file.read())
+                if self.ip is None:
+                    self.ip = list(config.keys())[0]
+                    logger.info('Using ip from config: ' + self.ip)
+                else:
+                    logger.info('Using ip: ' + self.ip)
+                if self.username is None:
+                    self.username = config[self.ip]['username']
+                    logger.info('Using username from config: ' + self.username)
+                else:
+                    logger.info('Using username: ' + self.username)
+        except Exception as e:
+            logger.info('Error opening config file, will attempt bridge registration')
+            self.register_app()
 
     def register_app(self):
         """Register this computer with the Hue bridge hardware and save the resulting access token."""
@@ -136,11 +132,9 @@ class Bridge(object):
                 if 'error' in key:
                     error_type = line['error']['type']
                     if error_type == 101:
-                        raise PhueRegistrationException(error_type,
-                                                        'The link button has not been pressed in the last 30 seconds.')
+                        raise PhueRegistrationException(error_type, 'The link button has not been pressed in the last 30 seconds.')
                     if error_type == 7:
-                        raise PhueException(error_type,
-                                            'Unknown username')
+                        raise PhueException(error_type, 'Unknown username')
 
     def request(self, mode='GET', address=None, data=None):
         """ Utility function for HTTP GET/PUT requests for the API"""
