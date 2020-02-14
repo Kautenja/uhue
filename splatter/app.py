@@ -1,5 +1,6 @@
 """The splatter web application"""
 import os
+import json
 import flask
 from . import phue
 
@@ -44,11 +45,13 @@ def icon():
 @app.route("/")
 def home():
     """Return the home page."""
-    # try:
-    #     bridge.connect()
-    # except phue.:
-    #     flask.render_template("connect.html")
-    # sort the lights according to some key
     lights = sorted(bridge.lights, key=lambda x: x.name)
-    print(lights)
     return flask.render_template("home.html", lights=lights)
+
+
+@app.route("/lights", methods=['POST'])
+def light():
+    """Handle a light command"""
+    data = flask.request.json
+    bridge.set_light(int(data['light_id']), data['function'], int(data['value']))
+    return 'set value'
