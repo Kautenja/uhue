@@ -62,11 +62,6 @@ class Bridge(object):
         else:
             pass
 
-        # self.minutes = 600 # these do not seem to be used anywhere?
-        # self.seconds = 10
-
-        self.connect()
-
     def get_ip_address(self, set_result=False):
         """
         Get the bridge ip address from the meethue.com nupnp api.
@@ -96,67 +91,6 @@ class Bridge(object):
         # a bridge doesn't exist on the network interface
         return False
 
-    @property
-    def name(self):
-        """Return the name of the bridge."""
-        self._name = self.request('GET', '/api/' + self.username + '/config')['name']
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        """Set the name of the bridge to a new value."""
-        self._name = value
-        data = {'name': self._name}
-        self.request('PUT', '/api/' + self.username + '/config', data)
-
-    def request(self, mode='GET', address=None, data=None):
-        """ Utility function for HTTP GET/PUT requests for the API"""
-        connection = httplib.HTTPConnection(self.ip, timeout=10)
-
-        try:
-            if mode == 'GET' or mode == 'DELETE':
-                connection.request(mode, address)
-            if mode == 'PUT' or mode == 'POST':
-                connection.request(mode, address, json.dumps(data))
-
-            logger.debug("{0} {1} {2}".format(mode, address, str(data)))
-
-        except socket.timeout:
-            error = "{} Request to {}{} timed out.".format(mode, self.ip, address)
-
-            logger.exception(error)
-            raise PhueRequestTimeout(None, error)
-
-        result = connection.getresponse()
-        response = result.read()
-        connection.close()
-        response = response.decode('utf-8')
-
-        logger.debug(response)
-        return json.loads(response)
-
-    def register_app(self):
-        """ Register this computer with the Hue bridge hardware and save the resulting access token """
-        registration_request = {"devicetype": "python_hue"}
-        response = self.request('POST', '/api', registration_request)
-        for line in response:
-            for key in line:
-                if 'success' in key:
-                    with open(self.config_file_path, 'w') as f:
-                        logger.info(
-                            'Writing configuration file to ' + self.config_file_path)
-                        f.write(json.dumps({self.ip: line['success']}))
-                        logger.info('Reconnecting to the bridge')
-                    self.connect()
-                if 'error' in key:
-                    error_type = line['error']['type']
-                    if error_type == 101:
-                        raise PhueRegistrationException(error_type,
-                                                        'The link button has not been pressed in the last 30 seconds.')
-                    if error_type == 7:
-                        raise PhueException(error_type,
-                                            'Unknown username')
-
     def connect(self):
         """ Connect to the Hue bridge """
         logger.info('Attempting to connect to the bridge...')
@@ -185,6 +119,67 @@ class Bridge(object):
                 logger.info(
                     'Error opening config file, will attempt bridge registration')
                 self.register_app()
+
+    def register_app(self):
+        """Register this computer with the Hue bridge hardware and save the resulting access token."""
+        registration_request = {"devicetype": "python_hue"}
+        response = self.request('POST', '/api', registration_request)
+        for line in response:
+            for key in line:
+                if 'success' in key:
+                    with open(self.config_file_path, 'w') as f:
+                        logger.info(
+                            'Writing configuration file to ' + self.config_file_path)
+                        f.write(json.dumps({self.ip: line['success']}))
+                        logger.info('Reconnecting to the bridge')
+                    self.connect()
+                if 'error' in key:
+                    error_type = line['error']['type']
+                    if error_type == 101:
+                        raise PhueRegistrationException(error_type,
+                                                        'The link button has not been pressed in the last 30 seconds.')
+                    if error_type == 7:
+                        raise PhueException(error_type,
+                                            'Unknown username')
+
+    def request(self, mode='GET', address=None, data=None):
+        """ Utility function for HTTP GET/PUT requests for the API"""
+        connection = httplib.HTTPConnection(self.ip, timeout=10)
+
+        try:
+            if mode == 'GET' or mode == 'DELETE':
+                connection.request(mode, address)
+            if mode == 'PUT' or mode == 'POST':
+                connection.request(mode, address, json.dumps(data))
+
+            logger.debug("{0} {1} {2}".format(mode, address, str(data)))
+
+        except socket.timeout:
+            error = "{} Request to {}{} timed out.".format(mode, self.ip, address)
+
+            logger.exception(error)
+            raise PhueRequestTimeout(None, error)
+
+        result = connection.getresponse()
+        response = result.read()
+        connection.close()
+        response = response.decode('utf-8')
+
+        logger.debug(response)
+        return json.loads(response)
+
+    @property
+    def name(self):
+        """Return the name of the bridge."""
+        self._name = self.request('GET', '/api/' + self.username + '/config')['name']
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        """Set the name of the bridge to a new value."""
+        self._name = value
+        data = {'name': self._name}
+        self.request('PUT', '/api/' + self.username + '/config', data)
 
     def get_light_id_by_name(self, name):
         """ Lookup a light id based on string name. Case-sensitive. """
