@@ -32,12 +32,30 @@ def favicon():
     )
 
 
-@app.route('/img/icon.png')
-def icon():
+@app.route('/img/android-chrome-192x192.png')
+def icon192():
     """Return the icon associated with the application."""
     return flask.send_from_directory(
         os.path.join(app.root_path, 'static'),
-        'img/icon.png', mimetype='image/vnd.microsoft.icon'
+        'img/android-chrome-192x192.png', mimetype='image/vnd.microsoft.icon'
+    )
+
+
+@app.route('/img/android-chrome-512x512.png')
+def icon512():
+    """Return the icon associated with the application."""
+    return flask.send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'img/android-chrome-512x512.png', mimetype='image/vnd.microsoft.icon'
+    )
+
+
+@app.route('/img/apple-touch-icon.png')
+def apple_touch_icon():
+    """Return the icon associated with the application."""
+    return flask.send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'img/apple-touch-icon.png', mimetype='image/vnd.microsoft.icon'
     )
 
 
