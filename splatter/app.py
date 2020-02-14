@@ -7,8 +7,10 @@ import phue
 # create the Flask web server
 app = flask.Flask(__name__)
 
+
 # create the connection to the Hue bridge
 bridge = phue.Bridge()
+bridge.connect()
 
 
 @app.route('/site.webmanifest')
@@ -33,5 +35,10 @@ def favicon():
 @app.route("/")
 def home():
     """Return the home page."""
-    print(bridge.ip)
-    return flask.render_template("home.html")
+    # try:
+    #     bridge.connect()
+    # except phue.:
+    #     flask.render_template("connect.html")
+    # sort the lights according to some key
+    lights = sorted(bridge.lights, key=lambda x: x.name)
+    return flask.render_template("home.html", lights=lights)
