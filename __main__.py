@@ -5,12 +5,16 @@ from splatter.app import app
 
 # parse command line arguments
 parser = argparse.ArgumentParser(description=__doc__)
+
+
 parser.add_argument('--port', '-p',
     type=int,
     help='The port to run the service at.',
     required=False,
     default=8080
 )
+
+
 parser.add_argument('--debug', '-d',
     help='Whether to run the server in debugging mode.',
     required=False,
