@@ -3,7 +3,6 @@ import argparse
 from splatter.app import app
 
 
-# parse command line arguments
 parser = argparse.ArgumentParser(description=__doc__)
 
 
@@ -24,5 +23,4 @@ parser.add_argument('--debug', '-d',
 args = parser.parse_args()
 
 
-# run the application
 app.run(port=args.port, debug=args.debug)
