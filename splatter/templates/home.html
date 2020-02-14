@@ -73,7 +73,7 @@
       <span class="card-subtitle">Brightness</span>
       <form action="#">
         <p class="range-field">
-          <input type="range" id="{{ light.light_id }}" value="{{ light.brightness }}" min="0" max="254" onchange="set_hue_value(this.id, 'bri', this.value)"/>
+          <input type="range" id="{{ light.light_id }}" value="{{ light.brightness }}" min="0" max="254" onchange="set_light(this.id, 'bri', this.value)"/>
         </p>
       </form>
     </div>
