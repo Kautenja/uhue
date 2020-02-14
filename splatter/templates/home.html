@@ -3,17 +3,30 @@
 
 <head>
   <meta charset="utf-8">
-  <title></title>
+  <title>Splatter</title>
   <meta name="description" content="">
+
+  <!--Let browser know website is optimized for mobile-->
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <!-- manifest -->
   <link rel="manifest" href="site.webmanifest">
+
   <!-- icons -->
   <link rel="apple-touch-icon" href="img/icon.png">
   <link rel="shortcut icon" href="favicon.ico">
+
   <!-- style sheets -->
+
+  <!--Import Google Icon Font-->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- normalize line heights -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/normalize.css') }}">
+  <!--Import materialize.css-->
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/materialize.css') }}"  media="screen,projection"/>
+  <!-- import local style sheet -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
   <!-- theme color -->
   <meta name="theme-color" content="#87CEEB">
 </head>
@@ -23,14 +36,18 @@
     <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
   <![endif]-->
 
-  <!-- Add your site or application content here -->
-  <p>Hello world! This is HTML5 Boilerplate.</p>
-
+  <!-- show the lights -->
   {% for light in lights %}
       <p> {{ light.name }} </p>
   {% endfor %}
-  <script src="{{ url_for('static', filename='js/vendor/modernizr-3.8.0.min.js') }}/"></script>
-  <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+
+  <!--JavaScript at end of body for optimized loading-->
+  <!-- load modernizer -->
+  <script type="text/javascript" src="{{ url_for('static', filename='js/vendor/modernizr-3.8.0.min.js') }}/"></script>
+  <!-- load materialize -->
+  <script type="text/javascript" src="{{ url_for('static', filename='js/vendor/materialize.js') }}"></script>
+  <!-- load local JavaScript -->
+  <script type="text/javascript" src="{{ url_for('static', filename='js/home.js') }}"></script>
 </body>
 
 </html>
