@@ -43,19 +43,23 @@
     <div class="card-image waves-effect waves-block waves-light">
       <img class="activator" src="{{ url_for('static', filename='img/icon.png/') }}">
     </div>
-      <p>name {{ light.name }} </p>
       <p>on {{ light.on }} </p>
       <p>colormode {{ light.colormode }} </p>
       <p>brightness {{ light.brightness }} </p>
       <p>hue {{ light.hue }} </p>
       <p>saturation {{ light.saturation }} </p>
       <p>xy {{ light.xy }} </p>
-      <p> {{ light.effect }} </p>
-      <p> {{ light.alert }} </p>
-      <p> {{ light.reachable }} </p>
-      <p> {{ light.type }} </p>
-      <p> {{ light._get("swversion") }} </p>
-      <p> {{ light._get("uniqueid") }} </p>
+      <p>effect {{ light.effect }} </p>
+      <p>alert {{ light.alert }} </p>
+      <p>reachable {{ light.reachable }} </p>
+      <p>name {{ light.name }} </p>
+      <p>uniqueid {{ light._get("uniqueid") }} </p>
+      <p>modelid {{ light._get("modelid") }} </p>
+      <p>type {{ light.type }} </p>
+      <p>manufacturername {{ light._get("manufacturername") }} </p>
+      <p>productname {{ light._get("productname") }} </p>
+      <p>config {{ light._get("config") }} </p>
+      <p>capabilities {{ light._get("capabilities") }} </p>
   </div>
   {% endfor %}
 

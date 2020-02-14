@@ -827,7 +827,6 @@ class Bridge(object):
 
     def get_light(self, light_id=None, parameter=None):
         """ Gets state by light_id and parameter"""
-
         if is_string(light_id):
             light_id = self.get_light_id_by_name(light_id)
         if light_id is None:
@@ -836,15 +835,14 @@ class Bridge(object):
             'GET', '/api/' + self.username + '/lights/' + str(light_id))
         if parameter is None:
             return state
-        if parameter in ['name', 'type', 'uniqueid', 'swversion']:
+        if parameter in ['swupdate', 'type', 'name', 'modelid', 'manufacturername', 'productname', 'capabilities', 'config', 'uniqueid', 'swversion']:
             return state[parameter]
-        else:
-            try:
-                return state['state'][parameter]
-            except KeyError as e:
-                raise KeyError(
-                    'Not a valid key, parameter %s is not associated with light %s)'
-                    % (parameter, light_id))
+        try:
+            return state['state'][parameter]
+        except KeyError as e:
+            raise KeyError(
+                'Not a valid key, parameter %s is not associated with light %s)'
+                % (parameter, light_id))
 
     def set_light(self, light_id, parameter, value=None, transitiontime=None):
         """ Adjust properties of one or more lights.
