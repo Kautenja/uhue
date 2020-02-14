@@ -28,55 +28,86 @@ class Bridge(object):
         >>> b['Kitchen']
         <phue.Light at 0x10473d750>
 
-
-
     """
-    def __init__(self, ip=None, username=None, config_file_path=None):
-        """ Initialization function.
 
-        Parameters:
-        ------------
-        ip : string
-            IP address as dotted quad
-        username : string, optional
+    # the default name for the configuration file
+    CONFIG_FILE_NAME = '.python_hue'
+
+    def __init__(self, ip=None, username=None, config_file_path_=None):
+        """
+        Initialize a connection to a Hue bridge.
+
+        Args:
+            ip : string IP address as dotted quad
+            username : string, the username for the bridge
+            config_file_path: string, the path to the configuration file
+
+        Returns:
+            None
 
         """
-
-        if config_file_path is not None:
-            self.config_file_path = config_file_path
-        elif os.getenv(USER_HOME) is not None and os.access(os.getenv(USER_HOME), os.W_OK):
-            self.config_file_path = os.path.join(os.getenv(USER_HOME), '.python_hue')
-        elif 'iPad' in platform.machine() or 'iPhone' in platform.machine() or 'iPad' in platform.machine():
-            self.config_file_path = os.path.join(os.getenv(USER_HOME), 'Documents', '.python_hue')
-        else:
-            self.config_file_path = os.path.join(os.getcwd(), '.python_hue')
-
         self.ip = ip
         self.username = username
+        self.config_file_path = config_file_path(config_file_path_)
+
         self.lights_by_id = {}
         self.lights_by_name = {}
         self.sensors_by_id = {}
         self.sensors_by_name = {}
         self._name = None
 
+        if os.path.exists(self.config_file_path):  # load the config file
+            with open(self.config_file_path, 'r') as config_file:
+                pass  # TODO
+        else:
+            pass
+
         # self.minutes = 600 # these do not seem to be used anywhere?
         # self.seconds = 10
 
         self.connect()
 
+    def get_ip_address(self, set_result=False):
+        """
+        Get the bridge ip address from the meethue.com nupnp api.
+
+        Args:
+            set_result: whether to set the IP address to the bridge
+
+        Returns:
+            an IP address for a Hue bridge if one was detected, False otherwise
+
+        """
+        connection = httplib.HTTPSConnection('www.meethue.com')
+        connection.request('GET', '/api/nupnp')
+
+        logger.info('Connecting to meethue.com/api/nupnp')
+
+        result = connection.getresponse()
+        data = json.loads(str(result.read(), encoding='utf-8'))
+        # close connection after read() is done, to prevent issues with read()
+        connection.close()
+        ip_address = str(data[0]['internalipaddress'])
+
+        if ip_address != '':  # a bridge exists on the network interface
+            if set_result:  # store the IP address as the IP for this bridge
+                self.ip = ip_address
+            return ip_address
+        # a bridge doesn't exist on the network interface
+        return False
+
     @property
     def name(self):
-        '''Get or set the name of the bridge [string]'''
-        self._name = self.request(
-            'GET', '/api/' + self.username + '/config')['name']
+        """Return the name of the bridge."""
+        self._name = self.request('GET', '/api/' + self.username + '/config')['name']
         return self._name
 
     @name.setter
     def name(self, value):
+        """Set the name of the bridge to a new value."""
         self._name = value
         data = {'name': self._name}
-        self.request(
-            'PUT', '/api/' + self.username + '/config', data)
+        self.request('PUT', '/api/' + self.username + '/config', data)
 
     def request(self, mode='GET', address=None, data=None):
         """ Utility function for HTTP GET/PUT requests for the API"""
@@ -99,42 +130,10 @@ class Bridge(object):
         result = connection.getresponse()
         response = result.read()
         connection.close()
-        if PY3K:
-            response = response.decode('utf-8')
+        response = response.decode('utf-8')
 
         logger.debug(response)
         return json.loads(response)
-
-    def get_ip_address(self, set_result=False):
-
-        """ Get the bridge ip address from the meethue.com nupnp api """
-
-        connection = httplib.HTTPSConnection('www.meethue.com')
-        connection.request('GET', '/api/nupnp')
-
-        logger.info('Connecting to meethue.com/api/nupnp')
-
-        result = connection.getresponse()
-
-        if PY3K:
-            data = json.loads(str(result.read(), encoding='utf-8'))
-        else:
-            result_str = result.read()
-            data = json.loads(result_str)
-
-        """ close connection after read() is done, to prevent issues with read() """
-
-        connection.close()
-
-        ip = str(data[0]['internalipaddress'])
-
-        if ip is not '':
-            if set_result:
-                self.ip = ip
-
-            return ip
-        else:
-            return False
 
     def register_app(self):
         """ Register this computer with the Hue bridge hardware and save the resulting access token """
