@@ -53,5 +53,5 @@ def home():
 def light():
     """Handle a light command"""
     data = flask.request.json
-    bridge.set_light(int(data['light_id']), data['function'], int(data['value']))
+    bridge.set_light(int(data['light_id']), data['parameter'], int(data['value']))
     return 'set value'

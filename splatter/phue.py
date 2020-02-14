@@ -389,6 +389,11 @@ class Light(object):
         """
         self.xy, self.brightness = rgb_to_xy_bri(value)
 
+    @property
+    def color_hex(self):
+        """Return the color in hex format."""
+        return '%02x%02x%02x' % self.color
+
 
 class SensorState(dict):
     def __init__(self, bridge, sensor_id):

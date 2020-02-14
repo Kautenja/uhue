@@ -41,14 +41,18 @@
   <div class="cards">
   {% for light in lights %}
   <div class="card hue-light-card">
-    <div class="card-image waves-effect waves-block waves-light" style="background-color: rgb{{ light.color }}">
+      <button class="card-image waves-effect waves-block waves-light jscolor {valueElement:null,value:'{{light.color_hex}}'} color-button">
+        <img class="activator" src="{{ url_for('static', filename='img/hue/' + light.config['archetype'] + '.svg') }}">
+      </button>
+
+<!--     <div class="card-image waves-effect waves-block waves-light" style="background-color: rgb{{ light.color }}">
       <img class="activator" src="{{ url_for('static', filename='img/hue/' + light.config['archetype'] + '.svg') }}">
-    </div>
+    </div> -->
     <span class="card-title">{{ light.name }}</span>
     <span class="card-subtitle">{{ light.manufacturername }}</span>
     <div class="card-content">
       <!-- <p>rgb {{ light.color }} </p> -->
-      <p>on {{ light.on }} </p>
+      <!-- <p>on {{ light.on }} </p> -->
       <!-- <p>colormode {{ light.colormode }} </p> -->
       <!-- <p>brightness {{ light.brightness }} </p> -->
       <!-- <p>hue {{ light.hue }} </p> -->
@@ -69,7 +73,7 @@
       <span class="card-subtitle">Brightness</span>
       <form action="#">
         <p class="range-field">
-          <input type="range" id="{{ light.light_id }}" min="0" max="254" onchange="set_brightness(this.id, this.value)"/>
+          <input type="range" id="{{ light.light_id }}" value="{{ light.brightness }}" min="0" max="254" onchange="set_hue_value(this.id, 'bri', this.value)"/>
         </p>
       </form>
     </div>
@@ -85,6 +89,8 @@
   <script>window.jQuery || document.write('<script src="js/vendor/jquery-3.4.1.min.js"><\/script>')</script>
   <!-- load materialize -->
   <script type="text/javascript" src="{{ url_for('static', filename='js/vendor/materialize.js') }}"></script>
+  <!-- load jscolor -->
+  <script type="text/javascript" src="{{ url_for('static', filename='js/vendor/jscolor.js') }}"></script>
   <!-- load local JavaScript -->
   <script type="text/javascript" src="{{ url_for('static', filename='js/home.js') }}"></script>
 </body>
