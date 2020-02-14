@@ -23,3 +23,7 @@ function set_light(light_id, parameter, value) {
         dataType: "json"
     });
 }
+
+function set_color(light_id, value) {
+    set_light(light_id, 'color', String(value));
+}

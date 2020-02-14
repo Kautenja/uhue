@@ -94,4 +94,4 @@ def rgb_to_xy_bri(rgb):
     cx = X / (X + Y + Z)
     cy = Y / (X + Y + Z)
 
-    return (cx, cy), Y * 255.0
+    return (cx, cy), min(255, max(0, int(Y * 255.0)))

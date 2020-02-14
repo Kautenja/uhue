@@ -7,6 +7,10 @@
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
+.card {
+    border-radius: 5px;
+    overflow: hidden;
+}
 /* TODO: does grid-template-columns work above to replace these below? */
 
 /*@media (min-width: 600px) {

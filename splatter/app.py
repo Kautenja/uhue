@@ -53,5 +53,11 @@ def home():
 def light():
     """Handle a light command"""
     data = flask.request.json
+    if data['parameter'] == 'color':
+        value = data['value'].lstrip('#')
+        hlen = len(value)
+        rgb = tuple(int(value[i : i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
+        bridge[int(data['light_id'])].color = rgb
+        return 'set value'
     bridge.set_light(int(data['light_id']), data['parameter'], int(data['value']))
     return 'set value'
