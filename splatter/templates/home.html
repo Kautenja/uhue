@@ -38,31 +38,44 @@
   <![endif]-->
 
   <!-- show the lights -->
+  <div class="cards">
   {% for light in lights %}
   <div class="card hue-light-card">
     <div class="card-image waves-effect waves-block waves-light" style="background-color: rgb{{ light.color }}">
       <img class="activator" src="{{ url_for('static', filename='img/hue/' + light.config['archetype'] + '.svg') }}">
     </div>
     <span class="card-title">{{ light.name }}<i class="material-icons right">more_vert</i></span>
-      <p>rgb {{ light.color }} </p>
+    <span class="card-subtitle">{{ light.manufacturername }}</span>
+    <div class="card-content">
+      <!-- <p>rgb {{ light.color }} </p> -->
       <p>on {{ light.on }} </p>
-      <p>colormode {{ light.colormode }} </p>
-      <p>brightness {{ light.brightness }} </p>
-      <p>hue {{ light.hue }} </p>
-      <p>saturation {{ light.saturation }} </p>
-      <p>xy {{ light.xy }} </p>
-      <p>effect {{ light.effect }} </p>
-      <p>alert {{ light.alert }} </p>
-      <p>reachable {{ light.reachable }} </p>
-      <p>uniqueid {{ light.uniqueid }} </p>
-      <p>modelid {{ light.modelid }} </p>
-      <p>type {{ light.type }} </p>
-      <p>manufacturername {{ light.manufacturername }} </p>
-      <p>productname {{ light.productname }} </p>
-      <p>config {{ light.config }} </p>
-      <p>capabilities {{ light.capabilities }} </p>
+      <!-- <p>colormode {{ light.colormode }} </p> -->
+      <!-- <p>brightness {{ light.brightness }} </p> -->
+      <!-- <p>hue {{ light.hue }} </p> -->
+      <!-- <p>saturation {{ light.saturation }} </p> -->
+      <!-- <p>xy {{ light.xy }} </p> -->
+      <!-- <p>effect {{ light.effect }} </p> -->
+      <!-- <p>alert {{ light.alert }} </p> -->
+      <!-- <p>reachable {{ light.reachable }} </p> -->
+      <!-- <p>uniqueid {{ light.uniqueid }} </p> -->
+      <!-- <p>modelid {{ light.modelid }} </p> -->
+      <!-- <p>manufacturername {{ light.manufacturername }} </p> -->
+      <!-- <p>productname {{ light.productname }} </p> -->
+      <!-- <p>type {{ light.type }} </p> -->
+      <!-- <p>config {{ light.config }} </p> -->
+      <!-- <p>capabilities {{ light.capabilities }} </p> -->
+    </div>
+    <div class="card-action">
+      <span class="card-subtitle">Brightness</span>
+      <form action="#">
+        <p class="range-field">
+          <input type="range" id="light-{{ light.light_id }}" min="0" max="254" />
+        </p>
+      </form>
+    </div>
   </div>
   {% endfor %}
+  </div>
 
   <!--JavaScript at end of body for optimized loading-->
   <!-- load modernizer -->
