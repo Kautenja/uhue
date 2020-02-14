@@ -4,7 +4,7 @@ import flask
 
 
 # create the Flask web server
-APP = flask.Flask("Splatter")
+APP = flask.Flask(__name__)
 
 
 @APP.route('/site.webmanifest')
