@@ -40,9 +40,11 @@
   <!-- show the lights -->
   {% for light in lights %}
   <div class="card hue-light-card">
-    <div class="card-image waves-effect waves-block waves-light">
+    <div class="card-image waves-effect waves-block waves-light" style="background-color: rgb{{ light.rgb_color }}">
       <img class="activator" src="{{ url_for('static', filename='img/hue/' + light.config['archetype'] + '.svg') }}">
     </div>
+    <span class="card-title">{{ light.name }}<i class="material-icons right">more_vert</i></span>
+      <p>rgb {{ light.rgb_color }} </p>
       <p>on {{ light.on }} </p>
       <p>colormode {{ light.colormode }} </p>
       <p>brightness {{ light.brightness }} </p>
@@ -52,7 +54,6 @@
       <p>effect {{ light.effect }} </p>
       <p>alert {{ light.alert }} </p>
       <p>reachable {{ light.reachable }} </p>
-      <p>name {{ light.name }} </p>
       <p>uniqueid {{ light.uniqueid }} </p>
       <p>modelid {{ light.modelid }} </p>
       <p>type {{ light.type }} </p>
