@@ -11,8 +11,14 @@ parser.add_argument('--port', '-p',
     required=False,
     default=8080
 )
+parser.add_argument('--debug', '-d',
+    help='Whether to run the server in debugging mode.',
+    required=False,
+    default=False,
+    action='store_true'
+)
 args = parser.parse_args()
 
 
 # run the application
-app.run(port=args.port)
+app.run(port=args.port, debug=args.debug)
