@@ -41,7 +41,7 @@
   {% for light in lights %}
   <div class="card hue-light-card">
     <div class="card-image waves-effect waves-block waves-light">
-      <img class="activator" src="{{ url_for('static', filename='img/icon.png/') }}">
+      <img class="activator" src="{{ url_for('static', filename='img/hue/' + light.config['archetype'] + '.svg') }}">
     </div>
       <p>on {{ light.on }} </p>
       <p>colormode {{ light.colormode }} </p>
@@ -53,13 +53,13 @@
       <p>alert {{ light.alert }} </p>
       <p>reachable {{ light.reachable }} </p>
       <p>name {{ light.name }} </p>
-      <p>uniqueid {{ light._get("uniqueid") }} </p>
-      <p>modelid {{ light._get("modelid") }} </p>
+      <p>uniqueid {{ light.uniqueid }} </p>
+      <p>modelid {{ light.modelid }} </p>
       <p>type {{ light.type }} </p>
-      <p>manufacturername {{ light._get("manufacturername") }} </p>
-      <p>productname {{ light._get("productname") }} </p>
-      <p>config {{ light._get("config") }} </p>
-      <p>capabilities {{ light._get("capabilities") }} </p>
+      <p>manufacturername {{ light.manufacturername }} </p>
+      <p>productname {{ light.productname }} </p>
+      <p>config {{ light.config }} </p>
+      <p>capabilities {{ light.capabilities }} </p>
   </div>
   {% endfor %}
 

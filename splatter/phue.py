@@ -309,6 +309,66 @@ class Light(object):
         self._type = self._get('type')
         return self._type
 
+    @property
+    def uniqueid(self):
+        '''Get the unique device ID of this sensor [string]'''
+        self._uniqueid = self._get('uniqueid')
+        return self._uniqueid
+
+    @property
+    def modelid(self):
+        '''Get a unique identifier of the hardware model of this sensor [string]'''
+        self._modelid = self._get('modelid')
+        return self._modelid
+
+    @property
+    def type(self):
+        '''Get the sensor type of this device [string]'''
+        self._type = self._get('type')
+        return self._type
+
+    @property
+    def manufacturername(self):
+        '''Get the name of the manufacturer [string]'''
+        self._manufacturername = self._get('manufacturername')
+        return self._manufacturername
+
+    @property
+    def productname(self):
+        '''Get the name of the product [string]'''
+        self._productname = self._get('productname')
+        return self._productname
+
+    @property
+    def swversion(self):
+        '''Get the software version identifier of the sensor's firmware [string]'''
+        self._swversion = self._get('swversion')
+        return self._swversion
+
+    @property
+    def swupdate(self):
+        '''Return the software update dictionary'''
+        self._swupdate = self._get('swupdate')
+        return self._swupdate
+
+    @property
+    def capabilities(self):
+        '''Get the capabilities of the light [string]'''
+        self._capabilities = self._get('capabilities')
+        return self._capabilities
+
+    @property
+    def config(self):
+        ''' A dictionary of sensor config. Some values can be updated, some are read-only. [dict]'''
+        self._config = self._get('config')
+        return self._config
+
+    @property
+    def state(self):
+        ''' A dictionary of sensor state. Some values can be updated, some are read-only. [dict]'''
+        self._state = self._get('state')
+        return self._state
+
 
 class SensorState(dict):
     def __init__(self, bridge, sensor_id):
