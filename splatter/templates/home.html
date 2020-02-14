@@ -25,6 +25,7 @@
   <!--Import materialize.css-->
   <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/vendor/materialize.css') }}"  media="screen,projection"/>
   <!-- import local style sheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 
   <!-- theme color -->
@@ -38,7 +39,24 @@
 
   <!-- show the lights -->
   {% for light in lights %}
-      <p> {{ light.name }} </p>
+  <div class="card hue-light-card">
+    <div class="card-image waves-effect waves-block waves-light">
+      <img class="activator" src="{{ url_for('static', filename='img/icon.png/') }}">
+    </div>
+      <p>name {{ light.name }} </p>
+      <p>on {{ light.on }} </p>
+      <p>colormode {{ light.colormode }} </p>
+      <p>brightness {{ light.brightness }} </p>
+      <p>hue {{ light.hue }} </p>
+      <p>saturation {{ light.saturation }} </p>
+      <p>xy {{ light.xy }} </p>
+      <p> {{ light.effect }} </p>
+      <p> {{ light.alert }} </p>
+      <p> {{ light.reachable }} </p>
+      <p> {{ light.type }} </p>
+      <p> {{ light._get("swversion") }} </p>
+      <p> {{ light._get("uniqueid") }} </p>
+  </div>
   {% endfor %}
 
   <!--JavaScript at end of body for optimized loading-->

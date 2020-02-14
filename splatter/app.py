@@ -1,7 +1,7 @@
 """The splatter web application"""
 import os
 import flask
-import phue
+from . import phue
 
 
 # create the Flask web server
@@ -31,6 +31,15 @@ def favicon():
     )
 
 
+@app.route('/img/icon.png')
+def icon():
+    """Return the icon associated with the application."""
+    return flask.send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'img/icon.png', mimetype='image/vnd.microsoft.icon'
+    )
+
+
 # create the route for the root URL
 @app.route("/")
 def home():
@@ -41,4 +50,5 @@ def home():
     #     flask.render_template("connect.html")
     # sort the lights according to some key
     lights = sorted(bridge.lights, key=lambda x: x.name)
+    print(lights)
     return flask.render_template("home.html", lights=lights)
