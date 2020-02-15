@@ -103,3 +103,12 @@ def rgb_to_xy_bri(r, g, b):
     y = Y / denominator if denominator > 0 else 0
     # return the x, y tuple and shift and bound the brightness
     return (x, y), min(255, max(0, int(Y * 255.0)))
+
+
+# explicitly define the outward facing API of this module
+__all__ = [
+    correct_xyz2rgb_gamma.__name__,
+    xy_bri_to_rgb.__name__,
+    correct_rgb2xyz_gamma.__name__,
+    rgb_to_xy_bri.__name__
+]
