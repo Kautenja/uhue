@@ -6,8 +6,8 @@ import platform
 import socket
 from http.client import HTTPConnection, HTTPSConnection
 from .exceptions import PhueException, PhueRegistrationException, PhueRequestTimeout
-from .light import Light
 from .group import Group
+from .light import Light
 from .scene import Scene
 from .sensor import Sensor
 
@@ -25,7 +25,7 @@ else:
 CONFIG_FILE_NAME = '.python_hue'
 
 
-def config_file_path(config_file_path=None):
+def unwrap_config_file_path(config_file_path=None):
     if config_file_path is not None:  # user specified config file
         return config_file_path
     elif os.getenv(USER_HOME) is not None and os.access(os.getenv(USER_HOME), os.W_OK):
@@ -55,22 +55,26 @@ class Bridge(object):
 
     """
 
-    def __init__(self, ip=None, username=None, config_file_path_=None):
+    def __init__(self,
+        ip_address: str = None,
+        username: str = None,
+        config_file_path: str = None
+    ) -> None:
         """
         Initialize a connection to a Hue bridge.
 
         Args:
-            ip : string IP address as dotted quad
-            username : string, the username for the bridge
+            ip_address: string IP address as dotted quad
+            username: string, the username for the bridge
             config_file_path: string, the path to the configuration file
 
         Returns:
             None
 
         """
-        self.ip = ip
+        self.ip_address = ip_address
         self.username = username
-        self.config_file_path = config_file_path(config_file_path_)
+        self.config_file_path = unwrap_config_file_path(config_file_path)
 
         self.lights_by_id = {}
         self.lights_by_name = {}
@@ -102,7 +106,7 @@ class Bridge(object):
 
         if ip_address != '':  # a bridge exists on the network interface
             if set_result:  # store the IP address as the IP for this bridge
-                self.ip = ip_address
+                self.ip_address = ip_address
             return ip_address
 
         # a bridge doesn't exist on the network interface
@@ -118,7 +122,7 @@ class Bridge(object):
                     with open(self.config_file_path, 'w') as f:
                         logger.info(
                             'Writing configuration file to ' + self.config_file_path)
-                        f.write(json.dumps({self.ip: line['success']}))
+                        f.write(json.dumps({self.ip_address: line['success']}))
                         logger.info('Reconnecting to the bridge')
                     self.connect()
                 if 'error' in key:
@@ -131,25 +135,25 @@ class Bridge(object):
     @property
     def is_connected(self):
         """Return true if connected to the bridge."""
-        return self.ip is not None and self.username is not None
+        return self.ip_address is not None and self.username is not None
 
     def connect(self):
         """Connect to the Hue bridge."""
         logger.info('Attempting to connect to the bridge...')
         if self.is_connected:  # already connected
-            logger.info('Using ip: ' + self.ip)
+            logger.info('Using ip: ' + self.ip_address)
             logger.info('Using username: ' + self.username)
             return
         try:
             with open(self.config_file_path) as config_file:
                 config = json.loads(config_file.read())
-                if self.ip is None:
-                    self.ip = list(config.keys())[0]
-                    logger.info('Using ip from config: ' + self.ip)
+                if self.ip_address is None:
+                    self.ip_address = list(config.keys())[0]
+                    logger.info('Using ip from config: ' + self.ip_address)
                 else:
-                    logger.info('Using ip: ' + self.ip)
+                    logger.info('Using ip: ' + self.ip_address)
                 if self.username is None:
-                    self.username = config[self.ip]['username']
+                    self.username = config[self.ip_address]['username']
                     logger.info('Using username from config: ' + self.username)
                 else:
                     logger.info('Using username: ' + self.username)
@@ -159,7 +163,7 @@ class Bridge(object):
 
     def request(self, mode='GET', address=None, data=None):
         """ Utility function for HTTP GET/PUT requests for the API"""
-        connection = HTTPConnection(self.ip, timeout=10)
+        connection = HTTPConnection(self.ip_address, timeout=10)
 
         try:
             if mode == 'GET' or mode == 'DELETE':
@@ -170,7 +174,7 @@ class Bridge(object):
             logger.debug("{0} {1} {2}".format(mode, address, str(data)))
 
         except socket.timeout:
-            error = "{} Request to {}{} timed out.".format(mode, self.ip, address)
+            error = "{} Request to {}{} timed out.".format(mode, self.ip_address, address)
 
             logger.exception(error)
             raise PhueRequestTimeout(None, error)
