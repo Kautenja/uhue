@@ -19,7 +19,8 @@ if bridge.has_config_file:
 def hex_to_rgb(value: str) -> tuple:
     """Convert a hexadecimal string to an RGB tuple."""
     hlen = len(value)
-    return tuple(int(value[i : i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
+    step = hlen // 3
+    return tuple(int(value[i : i + step], 16) for i in range(0, hlen, step))
 
 
 # ----------------------------------------------------------------------------
