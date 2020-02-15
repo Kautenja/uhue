@@ -4,10 +4,10 @@ import json
 import logging
 import platform
 import socket
-from http.client import HTTPConnection, HTTPSConnection
+from http.client import HTTPConnection
 from .exceptions import PhueException, PhueRegistrationException, PhueRequestTimeout
-from .light import Light
 from .group import Group
+from .light import Light
 from .scene import Scene
 from .sensor import Sensor
 
@@ -15,27 +15,37 @@ from .sensor import Sensor
 logger = logging.getLogger('phue')
 
 
-if platform.system() == 'Windows':
-    USER_HOME = 'USERPROFILE'
-else:
-    USER_HOME = 'HOME'
-
-
 # the default name for the configuration file
 CONFIG_FILE_NAME = '.python_hue'
 
 
-def config_file_path(config_file_path=None):
-    if config_file_path is not None:  # user specified config file
+def unwrap_config_file_path(config_file_path: str = None):
+    """
+    Unwrap the path to the configuration file.
+
+    Args:
+        config_file_path: the path to the configuration file
+
+    Returns:
+        a formatted path to the configuration file
+
+    """
+    # get the user home directory
+    user_home = 'USERPROFILE' if platform.system() == 'Windows' else 'HOME'
+    # user specified configuration file
+    if config_file_path is not None:
         return config_file_path
-    elif os.getenv(USER_HOME) is not None and os.access(os.getenv(USER_HOME), os.W_OK):
-        return os.path.join(os.getenv(USER_HOME), CONFIG_FILE_NAME)
-    elif 'iPad' in platform.machine() or 'iPhone' in platform.machine():
-        return os.path.join(os.getenv(USER_HOME), 'Documents', CONFIG_FILE_NAME)
+    # write access to user home
+    if os.getenv(user_home) is not None and os.access(os.getenv(user_home), os.W_OK):
+        return os.path.join(os.getenv(user_home), CONFIG_FILE_NAME)
+    # iOS platform
+    if 'iPad' in platform.machine() or 'iPhone' in platform.machine():
+        return os.path.join(os.getenv(user_home), 'Documents', CONFIG_FILE_NAME)
+    # use current working directory
     return os.path.join(os.getcwd(), CONFIG_FILE_NAME)
 
 
-class Bridge(object):
+class Bridge:
     """
     An interface to the Hue ZigBee bridge.
 
@@ -55,22 +65,26 @@ class Bridge(object):
 
     """
 
-    def __init__(self, ip=None, username=None, config_file_path_=None):
+    def __init__(self,
+        ip_address: str = None,
+        username: str = None,
+        config_file_path: str = None
+    ) -> None:
         """
         Initialize a connection to a Hue bridge.
 
         Args:
-            ip : string IP address as dotted quad
-            username : string, the username for the bridge
+            ip_address: string IP address as dotted quad
+            username: string, the username for the bridge
             config_file_path: string, the path to the configuration file
 
         Returns:
             None
 
         """
-        self.ip = ip
+        self.ip_address = ip_address
         self.username = username
-        self.config_file_path = config_file_path(config_file_path_)
+        self.config_file_path = unwrap_config_file_path(config_file_path)
 
         self.lights_by_id = {}
         self.lights_by_name = {}
@@ -78,49 +92,30 @@ class Bridge(object):
         self.sensors_by_name = {}
         self._name = None
 
-    def get_ip_address(self, set_result=False):
-        """
-        Get the bridge ip address from the meethue.com nupnp api.
+    @property
+    def can_login(self) -> bool:
+        """Return true if connected to the bridge."""
+        return self.ip_address is not None and self.username is not None
 
-        Args:
-            set_result: whether to set the IP address to the bridge
+    @property
+    def has_config_file(self) -> bool:
+        """Return True if the configuration file exists."""
+        return os.path.exists(self.config_file_path)
 
-        Returns:
-            an IP address for a Hue bridge if one was detected, False otherwise
-
-        """
-        connection = HTTPSConnection('www.meethue.com')
-        connection.request('GET', '/api/nupnp')
-
-        logger.info('Connecting to meethue.com/api/nupnp')
-
-        result = connection.getresponse()
-        data = json.loads(str(result.read(), encoding='utf-8'))
-        # close connection after read() is done, to prevent issues with read()
-        connection.close()
-        ip_address = str(data[0]['internalipaddress'])
-
-        if ip_address != '':  # a bridge exists on the network interface
-            if set_result:  # store the IP address as the IP for this bridge
-                self.ip = ip_address
-            return ip_address
-
-        # a bridge doesn't exist on the network interface
-        return False
-
-    def register_app(self):
-        """Register this computer with the Hue bridge hardware and save the resulting access token."""
-        registration_request = {"devicetype": "python_hue"}
-        response = self.request('POST', '/api', registration_request)
+    def register(self) -> None:
+        """Register this computer with the Hue bridge hardware."""
+        if self.ip_address is None:  # IP address is required to send requests
+            raise ValueError("you must set an IP address before attempting to register")
+        # send the registration response to the server
+        response = self.request('POST', '/api', {"devicetype": "python_hue"})
         for line in response:
             for key in line:
                 if 'success' in key:
-                    with open(self.config_file_path, 'w') as f:
-                        logger.info(
-                            'Writing configuration file to ' + self.config_file_path)
-                        f.write(json.dumps({self.ip: line['success']}))
-                        logger.info('Reconnecting to the bridge')
-                    self.connect()
+                    self.username = line['success']['username']
+                    with open(self.config_file_path, 'w') as config_file:
+                        logger.info('Writing configuration file to %s', self.config_file_path)
+                        data = json.dumps({self.ip_address: line['success']})
+                        config_file.write(data)
                 if 'error' in key:
                     error_type = line['error']['type']
                     if error_type == 101:
@@ -128,59 +123,61 @@ class Bridge(object):
                     if error_type == 7:
                         raise PhueException(error_type, 'Unknown username')
 
-    @property
-    def is_connected(self):
-        """Return true if connected to the bridge."""
-        return self.ip is not None and self.username is not None
-
-    def connect(self):
+    def load_config_file(self) -> None:
         """Connect to the Hue bridge."""
-        logger.info('Attempting to connect to the bridge...')
-        if self.is_connected:  # already connected
-            logger.info('Using ip: ' + self.ip)
-            logger.info('Using username: ' + self.username)
-            return
-        try:
-            with open(self.config_file_path) as config_file:
-                config = json.loads(config_file.read())
-                if self.ip is None:
-                    self.ip = list(config.keys())[0]
-                    logger.info('Using ip from config: ' + self.ip)
-                else:
-                    logger.info('Using ip: ' + self.ip)
-                if self.username is None:
-                    self.username = config[self.ip]['username']
-                    logger.info('Using username from config: ' + self.username)
-                else:
-                    logger.info('Using username: ' + self.username)
-        except Exception as e:
-            logger.info('Error opening config file, will attempt bridge registration')
-            self.register_app()
+        logger.info('Loading bridge credentials from "%s"', self.config_file_path)
+        # check for existence of the file
+        if not self.has_config_file:
+            raise RuntimeError("No configuration found. run register")
+        # load the file into a JSON object
+        with open(self.config_file_path, 'r') as config_file:
+            config = json.loads(config_file.read())
+        # setup the IP address
+        self.ip_address = list(config.keys())[0]
+        logger.info('Using ip from config: %s', self.ip_address)
+        # setup the username
+        self.username = config[self.ip_address]['username']
+        logger.info('Using username from config: %s', self.username)
 
-    def request(self, mode='GET', address=None, data=None):
-        """ Utility function for HTTP GET/PUT requests for the API"""
-        connection = HTTPConnection(self.ip, timeout=10)
+    def request(self,
+        mode: str = 'GET',
+        address: str = None,
+        data: dict = None,
+        timeout: int = 10
+    ) -> dict:
+        """
+        Perform an HTTP GET/PUT requests on the API.
 
+        Args:
+            mode: the HTTP mode to use (e.g., GET)
+            address: the address to send the message to
+            data: the data to send in the message
+            timeout: the timeout for the request
+
+        Returns:
+            the response data as a dictionary
+
+        """
+        # create the HTTP connection
+        connection = HTTPConnection(self.ip_address, timeout=timeout)
+        # make the request using the given mode
         try:
-            if mode == 'GET' or mode == 'DELETE':
+            if mode in {'GET', 'DELETE'}:
                 connection.request(mode, address)
-            if mode == 'PUT' or mode == 'POST':
+            if mode in {'PUT', 'POST'}:
                 connection.request(mode, address, json.dumps(data))
-
-            logger.debug("{0} {1} {2}".format(mode, address, str(data)))
-
-        except socket.timeout:
-            error = "{} Request to {}{} timed out.".format(mode, self.ip, address)
-
+            logger.debug("%s %s %s", mode, address, str(data))
+        except socket.timeout:  # handle a socket timeout
+            error = "{} Request to {}{} timed out.".format(mode, self.ip_address, address)
             logger.exception(error)
             raise PhueRequestTimeout(None, error)
-
+        # parse the response data and close the connection
         result = connection.getresponse()
         response = result.read()
         connection.close()
         response = response.decode('utf-8')
-
         logger.debug(response)
+        # parse the JSON data into a dictionary
         return json.loads(response)
 
     @property

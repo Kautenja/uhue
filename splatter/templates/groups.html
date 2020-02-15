@@ -1,0 +1,115 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Splatter</title>
+  <meta name="description" content="">
+
+  <!--Let browser know website is optimized for mobile-->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- manifest -->
+  <link rel="manifest" href="site.webmanifest">
+
+  <!-- icons -->
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="shortcut icon" href="favicon.ico">
+
+  <!--Import Google Icon Font-->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- normalize line heights -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/vendor/normalize.css') }}">
+  <!--Import materialize.css-->
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/vendor/materialize.css') }}"  media="screen,projection"/>
+  <!-- import local style sheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/groups.css') }}">
+
+  <!-- theme color -->
+  <meta name="theme-color" content="#F1F1F1">
+</head>
+
+<body>
+  <!--[if IE]>
+    <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+  <![endif]-->
+
+  <!-- Navigation -->
+  <nav class="navbar-material">
+    <div class="nav-wrapper">
+      <a href="#!" class="brand-logo">
+        <img src="{{ url_for('static', filename='img/android-chrome-192x192.png') }}"> Splatter
+      </a>
+      <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+
+      <ul class="right hide-on-med-and-down">
+        <li><a href="/lights">Lights</a></li>
+        <li class="active"><a href="#">Groups</a></li>
+        <li><a href="/scenes">Scenes</a></li>
+        <li><a href="/sensors">Sensors</a></li>
+        <li><a href="/animations">Animations</a></li>
+      </ul>
+    </div>
+  </nav>
+  <!-- the side nav that shows when mobile users press the hamburger -->
+  <ul class="sidenav" id="mobile-nav">
+    <li><a href="/lights">Lights</a></li>
+    <li class="active"><a href="#">Groups</a></li>
+    <li><a href="/scenes">Scenes</a></li>
+    <li><a href="/sensors">Sensors</a></li>
+    <li><a href="/animations">Animations</a></li>
+  </ul>
+
+  <!-- show the groups -->
+  <div class="cards">
+  {% for group in groups %}
+  <div class="card hue-light-card">
+    <button class="activator card-image waves-effect waves-block waves-light jscolor {valueElement:null,value:'{{group.color_hex}}',onFineChange:'set_group_color({{ group.group_id }}, this)'} color-button">
+    </button>
+    <span class="card-title">{{ group.name }}</span>
+    <div class="card-content">
+      <!-- <p>rgb {{ group.color }} </p> -->
+      <!-- <p>on {{ group.on }} </p> -->
+      <!-- <p>colormode {{ group.colormode }} </p> -->
+      <!-- <p>brightness {{ group.brightness }} </p> -->
+      <!-- <p>hue {{ group.hue }} </p> -->
+      <!-- <p>saturation {{ group.saturation }} </p> -->
+      <!-- <p>xy {{ group.xy }} </p> -->
+      <!-- <p>effect {{ group.effect }} </p> -->
+      <!-- <p>alert {{ group.alert }} </p> -->
+      <div class="switch">
+        <label>
+          <input {% if group.on %}checked{% else %}{% endif %} type="checkbox" onclick="set_group_on({{ group.group_id }}, this)">
+          <span class="lever"></span>
+        </label>
+      </div>
+
+      <span class="card-subtitle">Brightness</span>
+      <form action="#">
+        <p class="range-field">
+          <input type="range" value="{{ group.brightness }}" min="0" max="254" onchange="set_group({{ group.group_id }}, 'bri', this.value)"/>
+        </p>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+  </div>
+
+  <!--JavaScript at end of body for optimized loading-->
+  <!-- load modernizer -->
+  <script type="text/javascript" src="{{ url_for('static', filename='js/vendor/modernizr-3.8.0.min.js') }}"></script>
+  <!-- load JQuery -->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script>window.jQuery || document.write('<script src="js/vendor/jquery-3.4.1.min.js"><\/script>')</script>
+  <!-- load materialize -->
+  <script type="text/javascript" src="{{ url_for('static', filename='js/vendor/materialize.js') }}"></script>
+  <!-- load jscolor -->
+  <script type="text/javascript" src="{{ url_for('static', filename='js/vendor/jscolor.js') }}"></script>
+  <!-- load local JavaScript -->
+  <script type="text/javascript" src="{{ url_for('static', filename='js/nav.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/api.js') }}"></script>
+</body>
+
+</html>

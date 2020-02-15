@@ -10,7 +10,22 @@ app = flask.Flask(__name__)
 
 # create the connection to the Hue bridge
 bridge = phue.Bridge()
-# bridge.connect()
+# check for a configuration file and load it
+if bridge.has_config_file:
+    bridge.load_config_file()
+
+
+# TODO: move to utility module
+def hex_to_rgb(value: str) -> tuple:
+    """Convert a hexadecimal string to an RGB tuple."""
+    hlen = len(value)
+    step = hlen // 3
+    return tuple(int(value[i : i + step], 16) for i in range(0, hlen, step))
+
+
+# ----------------------------------------------------------------------------
+# MARK: Metadata Hooks
+# ----------------------------------------------------------------------------
 
 
 @app.route('/site.webmanifest')
@@ -58,23 +73,118 @@ def apple_touch_icon():
     )
 
 
-# create the route for the root URL
+# ----------------------------------------------------------------------------
+# MARK: Page Hooks
+# ----------------------------------------------------------------------------
+
+
 @app.route("/")
 def home():
     """Return the home page."""
-    lights = sorted(bridge.lights, key=lambda x: x.name)
-    return flask.render_template("home.html", lights=lights)
+    # TODO: allow setting of different home page
+    return flask.redirect('/lights')
 
 
-@app.route("/lights", methods=['POST'])
-def light():
-    """Handle a light command"""
+def render_register_page():
+    """TODO."""
+    bridge.ip_address = phue.find_bridge()
+    if bridge.ip_address is None:  # TODO: bridge not found page
+        return 400
+    return flask.render_template("register.html", ip_address=bridge.ip_address)
+
+
+@app.route("/lights")
+def lights():
+    """Return the lights page."""
+    if bridge.can_login:
+        lights_ = sorted(bridge.lights, key=lambda x: x.name)
+        return flask.render_template("lights.html", lights=lights_)
+    return render_register_page()
+
+
+@app.route("/groups")
+def groups():
+    """Return the groups page."""
+    if bridge.can_login:
+        groups_ = sorted(bridge.groups, key=lambda x: x.name)
+        return flask.render_template("groups.html", groups=groups_)
+    return render_register_page()
+
+
+@app.route("/scenes")
+def scenes():
+    """Return the scenes page."""
+    if bridge.can_login:
+        scenes_ = sorted(bridge.scenes, key=lambda x: x.name)
+        return flask.render_template("scenes.html", scenes=scenes_)
+    return render_register_page()
+
+
+@app.route("/sensors")
+def sensors():
+    """Return the sensors page."""
+    if bridge.can_login:
+        sensors_ = sorted(bridge.sensors, key=lambda x: x.name)
+        return flask.render_template("sensors.html", sensors=sensors_)
+    return render_register_page()
+
+
+@app.route("/animations")
+def animations():
+    """Return the animations page."""
+    if bridge.can_login:
+        # TODO: animation design
+        return flask.render_template("animations.html")
+    return render_register_page()
+
+
+# ----------------------------------------------------------------------------
+# MARK: Hue API
+# ----------------------------------------------------------------------------
+
+
+@app.route("/hue/register", methods=['POST'])
+def register():
+    """Return the home page."""
+    try:
+        bridge.register()
+    except phue.PhueRegistrationException:
+        return {'PhueRegistrationException': 0}
+    # return {'redirect': '/'}
+    # TODO: test this
+    return flask.redirect('/')
+
+
+@app.route("/hue/lights", methods=['POST'])
+def hue_lights():
+    """Handle a lights endpoint"""
     data = flask.request.json
     if data['parameter'] == 'color':
-        value = data['value'].lstrip('#')
-        hlen = len(value)
-        rgb = tuple(int(value[i : i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
+        rgb = hex_to_rgb(data['value'].lstrip('#'))
         bridge[int(data['light_id'])].color = rgb
         return 'set value'
-    bridge.set_light(int(data['light_id']), data['parameter'], int(data['value']))
+    if data['parameter'] == 'on':
+        data['value'] = bool(data['value'])
+    else:
+        data['value'] = int(data['value'])
+    bridge.set_light(int(data['light_id']), data['parameter'], data['value'])
+    return 'set value'
+
+
+@app.route("/hue/groups", methods=['POST'])
+def hue_groups():
+    """Handle a groups endpoint"""
+    data = flask.request.json
+    if data['parameter'] == 'color':
+        rgb = hex_to_rgb(data['value'].lstrip('#'))
+        # TODO: map group ID to group objects in the Bridge
+        for group in bridge.groups:
+            if group.group_id == data['group_id']:
+                group.color = rgb
+        return 'set value'
+    if data['parameter'] == 'on':
+        data['value'] = bool(data['value'])
+    else:
+        data['value'] = int(data['value'])
+    bridge.set_group(int(data['group_id']), data['parameter'], data['value'])
     return 'set value'

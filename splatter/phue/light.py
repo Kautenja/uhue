@@ -6,7 +6,7 @@ from .colors import xy_bri_to_rgb, rgb_to_xy_bri
 logger = logging.getLogger('phue')
 
 
-class Light(object):
+class Light:
     """A Hue light object."""
 
     def __init__(self, bridge, light_id):
@@ -42,7 +42,6 @@ class Light(object):
         return self.bridge.get_light(self.light_id, *args, **kwargs)
 
     def _set(self, *args, **kwargs):
-
         if self.transitiontime is not None:
             kwargs['transitiontime'] = self.transitiontime
             logger.debug("Setting with transitiontime = {0} ds = {1} s".format(
