@@ -114,7 +114,7 @@ class Bridge:
                 if 'success' in key:
                     self.username = line['success']['username']
                     with open(self.config_file_path, 'w') as config_file:
-                        logger.info('Writing configuration file to ' + self.config_file_path)
+                        logger.info('Writing configuration file to %s', self.config_file_path)
                         data = json.dumps({self.ip_address: line['success']})
                         config_file.write(data)
                 if 'error' in key:
@@ -126,7 +126,7 @@ class Bridge:
 
     def load_config_file(self) -> None:
         """Connect to the Hue bridge."""
-        logger.info(f'Loading bridge credentials from "{self.config_file_path}"')
+        logger.info('Loading bridge credentials from "%s"', self.config_file_path)
         # check for existence of the file
         if not self.has_config_file:
             raise RuntimeError("No configuration found. run register")
@@ -135,35 +135,50 @@ class Bridge:
             config = json.loads(config_file.read())
         # setup the IP address
         self.ip_address = list(config.keys())[0]
-        logger.info('Using ip from config: ' + self.ip_address)
+        logger.info('Using ip from config: %s', self.ip_address)
         # setup the username
         self.username = config[self.ip_address]['username']
-        logger.info('Using username from config: ' + self.username)
+        logger.info('Using username from config: %s', self.username)
 
-    def request(self, mode='GET', address=None, data=None):
-        """ Utility function for HTTP GET/PUT requests for the API"""
-        connection = HTTPConnection(self.ip_address, timeout=10)
+    def request(self,
+        mode: str = 'GET',
+        address: str = None,
+        data: dict = None,
+        timeout: int = 10
+    ) -> dict:
+        """
+        Perform an HTTP GET/PUT requests on the API.
 
+        Args:
+            mode: the HTTP mode to use (e.g., GET)
+            address: the address to send the message to
+            data: the data to send in the message
+            timeout: the timeout for the request
+
+        Returns:
+            the response data as a dictionary
+
+        """
+        # create the HTTP connection
+        connection = HTTPConnection(self.ip_address, timeout=timeout)
+        # make the request using the given mode
         try:
-            if mode == 'GET' or mode == 'DELETE':
+            if mode in {'GET', 'DELETE'}:
                 connection.request(mode, address)
-            if mode == 'PUT' or mode == 'POST':
+            if mode in {'PUT', 'POST'}:
                 connection.request(mode, address, json.dumps(data))
-
-            logger.debug("{0} {1} {2}".format(mode, address, str(data)))
-
-        except socket.timeout:
+            logger.debug("%s %s %s", mode, address, str(data))
+        except socket.timeout:  # handle a socket timeout
             error = "{} Request to {}{} timed out.".format(mode, self.ip_address, address)
-
             logger.exception(error)
             raise PhueRequestTimeout(None, error)
-
+        # parse the response data and close the connection
         result = connection.getresponse()
         response = result.read()
         connection.close()
         response = response.decode('utf-8')
-
         logger.debug(response)
+        # parse the JSON data into a dictionary
         return json.loads(response)
 
     @property
