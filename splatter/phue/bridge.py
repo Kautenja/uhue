@@ -31,9 +31,6 @@ class Bridge(object):
 
     """
 
-    # the default name for the configuration file
-    CONFIG_FILE_NAME = '.python_hue'
-
     def __init__(self, ip=None, username=None, config_file_path_=None):
         """
         Initialize a connection to a Hue bridge.
