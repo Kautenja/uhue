@@ -89,7 +89,7 @@
       <!-- <p>capabilities {{ light.capabilities }} </p> -->
       <div class="switch">
         <label>
-          <input {% if light.on %}checked{% else %}{% endif %} type="checkbox" onclick="thing({{ light.light_id }}, this)">
+          <input {% if light.on %}checked{% else %}{% endif %} type="checkbox" onclick="set_on({{ light.light_id }}, this)">
           <span class="lever"></span>
         </label>
       </div>

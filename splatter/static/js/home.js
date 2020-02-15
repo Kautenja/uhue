@@ -24,14 +24,24 @@ function set_light(light_id, parameter, value) {
     });
 }
 
+/**
+    Set a color value for a light on the hue server.
+
+    @param light_id the ID for the light to set
+    @param value the value to set the color to
+
+*/
 function set_color(light_id, value) {
     set_light(light_id, 'color', String(value));
 }
 
-function thing(light_id, obj) {
-    if ($(obj).is(":checked")) {
-        set_light(light_id, 'on', 1);
-    } else {
-        set_light(light_id, 'on', 0);
-    }
+/**
+    Set a the on state for a light on the hue server.
+
+    @param light_id the ID for the light to set
+    @param checkbox the check-box to determine the on state from
+
+*/
+function set_on(light_id, checkbox) {
+    set_light(light_id, 'on', $(checkbox).is(":checked"));
 }
