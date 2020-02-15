@@ -87,6 +87,13 @@
       <!-- <p>type {{ light.type }} </p> -->
       <!-- <p>config {{ light.config }} </p> -->
       <!-- <p>capabilities {{ light.capabilities }} </p> -->
+      <div class="switch">
+        <label>
+          <input {% if light.on %}checked{% else %}{% endif %} type="checkbox" onclick="thing({{ light.light_id }}, this)">
+          <span class="lever"></span>
+        </label>
+      </div>
+
       <span class="card-subtitle">Brightness</span>
       <form action="#">
         <p class="range-field">

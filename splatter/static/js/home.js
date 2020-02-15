@@ -27,3 +27,11 @@ function set_light(light_id, parameter, value) {
 function set_color(light_id, value) {
     set_light(light_id, 'color', String(value));
 }
+
+function thing(light_id, obj) {
+    if ($(obj).is(":checked")) {
+        set_light(light_id, 'on', 1);
+    } else {
+        set_light(light_id, 'on', 0);
+    }
+}

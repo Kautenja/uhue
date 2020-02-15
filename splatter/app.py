@@ -94,5 +94,9 @@ def light():
         rgb = tuple(int(value[i : i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
         bridge[int(data['light_id'])].color = rgb
         return 'set value'
-    bridge.set_light(int(data['light_id']), data['parameter'], int(data['value']))
+    if data['parameter'] == 'on':
+        data['value'] = bool(data['value'])
+    else:
+        data['value'] = int(data['value'])
+    bridge.set_light(int(data['light_id']), data['parameter'], data['value'])
     return 'set value'
