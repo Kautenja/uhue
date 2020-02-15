@@ -45,8 +45,8 @@
       <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
 
       <ul class="right hide-on-med-and-down">
-        <li class="active"><a href="#">Lights</a></li>
-        <li><a href="/groups">Groups</a></li>
+        <li><a href="/lights">Lights</a></li>
+        <li class="active"><a href="#">Groups</a></li>
         <li><a href="/scenes">Scenes</a></li>
         <li><a href="/sensors">Sensors</a></li>
         <li><a href="/animations">Animations</a></li>
@@ -55,57 +55,12 @@
   </nav>
   <!-- the side nav that shows when mobile users press the hamburger -->
   <ul class="sidenav" id="mobile-nav">
-    <li class="active"><a href="#">Lights</a></li>
-    <li><a href="/groups">Groups</a></li>
+    <li><a href="/lights">Lights</a></li>
+    <li class="active"><a href="#">Groups</a></li>
     <li><a href="/scenes">Scenes</a></li>
     <li><a href="/sensors">Sensors</a></li>
     <li><a href="/animations">Animations</a></li>
   </ul>
-
-  <!-- show the lights -->
-  <div class="cards">
-  {% for light in lights %}
-  <div class="card hue-light-card">
-    <button class="card-image waves-effect waves-block waves-light jscolor {valueElement:null,value:'{{light.color_hex}}',onFineChange:'set_color({{ light.light_id }}, this)'} color-button">
-      <img class="activator" src="{{ url_for('static', filename='img/hue/' + light.config['archetype'] + '.svg') }}">
-    </button>
-    <span class="card-title">{{ light.name }}</span>
-    <span class="card-subtitle">{{ light.manufacturername }}</span>
-    <div class="card-content">
-      <!-- <p>rgb {{ light.color }} </p> -->
-      <!-- <p>on {{ light.on }} </p> -->
-      <!-- <p>colormode {{ light.colormode }} </p> -->
-      <!-- <p>brightness {{ light.brightness }} </p> -->
-      <!-- <p>hue {{ light.hue }} </p> -->
-      <!-- <p>saturation {{ light.saturation }} </p> -->
-      <!-- <p>xy {{ light.xy }} </p> -->
-      <!-- <p>effect {{ light.effect }} </p> -->
-      <!-- <p>alert {{ light.alert }} </p> -->
-      <!-- <p>reachable {{ light.reachable }} </p> -->
-      <!-- <p>uniqueid {{ light.uniqueid }} </p> -->
-      <!-- <p>modelid {{ light.modelid }} </p> -->
-      <!-- <p>manufacturername {{ light.manufacturername }} </p> -->
-      <!-- <p>productname {{ light.productname }} </p> -->
-      <!-- <p>type {{ light.type }} </p> -->
-      <!-- <p>config {{ light.config }} </p> -->
-      <!-- <p>capabilities {{ light.capabilities }} </p> -->
-      <div class="switch">
-        <label>
-          <input {% if light.on %}checked{% else %}{% endif %} type="checkbox" onclick="set_on({{ light.light_id }}, this)">
-          <span class="lever"></span>
-        </label>
-      </div>
-
-      <span class="card-subtitle">Brightness</span>
-      <form action="#">
-        <p class="range-field">
-          <input type="range" value="{{ light.brightness }}" min="0" max="254" onchange="set_light({{ light.light_id }}, 'bri', this.value)"/>
-        </p>
-      </form>
-    </div>
-  </div>
-  {% endfor %}
-  </div>
 
   <!--JavaScript at end of body for optimized loading-->
   <!-- load modernizer -->
