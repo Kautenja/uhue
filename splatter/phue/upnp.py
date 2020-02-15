@@ -7,7 +7,7 @@ from http.client import HTTPSConnection
 logger = logging.getLogger('phue')
 
 
-def get_ip_address(self):
+def find_bridge_address(self):
     """Get the bridge IP address from the meethue.com UPnP service."""
     # open a secure connection to the Philips Hue web server
     connection = HTTPSConnection('www.meethue.com')
@@ -23,4 +23,4 @@ def get_ip_address(self):
 
 
 # explicitly define the outward facing API of this module
-__all__ = [get_ip_address.__name__]
+__all__ = [find_bridge_address.__name__]
