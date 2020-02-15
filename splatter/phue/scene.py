@@ -5,7 +5,7 @@ import logging
 logger = logging.getLogger('phue')
 
 
-class Scene(object):
+class Scene:
     """A container for a scene."""
 
     def __init__(self, sid, appdata=None, lastupdated=None,

@@ -6,7 +6,7 @@ from .colors import xy_bri_to_rgb, rgb_to_xy_bri
 logger = logging.getLogger('phue')
 
 
-class Light(object):
+class Light:
     """A Hue light object."""
 
     def __init__(self, bridge, light_id):

@@ -46,7 +46,7 @@ def unwrap_config_file_path(config_file_path: str = None):
     return os.path.join(os.getcwd(), CONFIG_FILE_NAME)
 
 
-class Bridge(object):
+class Bridge:
     """
     An interface to the Hue ZigBee bridge.
 
@@ -93,19 +93,30 @@ class Bridge(object):
         self.sensors_by_name = {}
         self._name = None
 
-    def register_app(self):
-        """Register this computer with the Hue bridge hardware and save the resulting access token."""
-        registration_request = {"devicetype": "python_hue"}
-        response = self.request('POST', '/api', registration_request)
+    @property
+    def can_login(self) -> bool:
+        """Return true if connected to the bridge."""
+        return self.ip_address is not None and self.username is not None
+
+    @property
+    def has_config_file(self) -> bool:
+        """Return True if the configuration file exists."""
+        return os.path.exists(self.config_file_path)
+
+    def register(self) -> None:
+        """Register this computer with the Hue bridge hardware."""
+        if self.ip_address is None:  # IP address is required to send requests
+            raise ValueError("you must set an IP address before attempting to register")
+        # send the registration response to the server
+        response = self.request('POST', '/api', {"devicetype": "python_hue"})
         for line in response:
             for key in line:
                 if 'success' in key:
-                    with open(self.config_file_path, 'w') as f:
-                        logger.info(
-                            'Writing configuration file to ' + self.config_file_path)
-                        f.write(json.dumps({self.ip_address: line['success']}))
-                        logger.info('Reconnecting to the bridge')
-                    self.connect()
+                    self.username = line['success']['username']
+                    with open(self.config_file_path, 'w') as config_file:
+                        logger.info('Writing configuration file to ' + self.config_file_path)
+                        data = json.dumps({self.ip_address: line['success']})
+                        config_file.write(data)
                 if 'error' in key:
                     error_type = line['error']['type']
                     if error_type == 101:
@@ -113,34 +124,21 @@ class Bridge(object):
                     if error_type == 7:
                         raise PhueException(error_type, 'Unknown username')
 
-    @property
-    def is_connected(self):
-        """Return true if connected to the bridge."""
-        return self.ip_address is not None and self.username is not None
-
-    def connect(self):
+    def load_config_file(self):
         """Connect to the Hue bridge."""
-        logger.info('Attempting to connect to the bridge...')
-        if self.is_connected:  # already connected
-            logger.info('Using ip: ' + self.ip_address)
-            logger.info('Using username: ' + self.username)
-            return
-        try:
-            with open(self.config_file_path) as config_file:
-                config = json.loads(config_file.read())
-                if self.ip_address is None:
-                    self.ip_address = list(config.keys())[0]
-                    logger.info('Using ip from config: ' + self.ip_address)
-                else:
-                    logger.info('Using ip: ' + self.ip_address)
-                if self.username is None:
-                    self.username = config[self.ip_address]['username']
-                    logger.info('Using username from config: ' + self.username)
-                else:
-                    logger.info('Using username: ' + self.username)
-        except Exception as e:
-            logger.info('Error opening config file, will attempt bridge registration')
-            self.register_app()
+        logger.info(f'Loading bridge credentials from "{self.config_file_path}"')
+        # check for existence of the file
+        if not self.has_config_file:
+            raise RuntimeError("No configuration found. run register")
+        # load the file into a JSON object
+        with open(self.config_file_path, 'r') as config_file:
+            config = json.loads(config_file.read())
+        # setup the IP address
+        self.ip_address = list(config.keys())[0]
+        logger.info('Using ip from config: ' + self.ip_address)
+        # setup the username
+        self.username = config[self.ip_address]['username']
+        logger.info('Using username from config: ' + self.username)
 
     def request(self, mode='GET', address=None, data=None):
         """ Utility function for HTTP GET/PUT requests for the API"""

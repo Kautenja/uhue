@@ -31,7 +31,7 @@ class SensorConfig(dict):
         self._bridge.set_sensor_config(self._sensor_id, self)
 
 
-class Sensor(object):
+class Sensor:
     """A Hue sensor object."""
 
     def __init__(self, bridge, sensor_id):
