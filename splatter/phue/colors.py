@@ -3,8 +3,10 @@
 Reference: https://developers.meethue.com/develop/application-design-guidance/color-conversion-formulas-rgb-to-xy-and-back/
 
 """
+from numba import jit
 
 
+@jit(nopython=True)
 def correct_xyz2rgb_gamma(channel):
     """
     Correct the gamma of a channel during an XYZ to sRGB conversion.
@@ -20,11 +22,12 @@ def correct_xyz2rgb_gamma(channel):
     if channel <= 0.0031308:
         channel = channel * 12.92
     else:
-        channel = (1.0 + 0.055) * pow(channel, (1.0 / 2.4)) - 0.055
+        channel = 1.055 * pow(channel, (1.0 / 2.4)) - 0.055
     # normalize channel as int in [0, 255]
     return min(255, max(0, int(channel * 255)))
 
 
+@jit(nopython=True)
 def xy_bri_to_rgb(x, y, brightness):
     """
     Convert an XY-Brightness color to RGB.
@@ -43,14 +46,14 @@ def xy_bri_to_rgb(x, y, brightness):
     Y = brightness / 255.0
     X = (Y / y) * x
     Z = (Y / y) * z
-    # Wide gamut conversion D65
-    r =  X * 1.656492 - Y * 0.354851 - Z * 0.255038
-    g = -X * 0.707196 + Y * 1.655397 + Z * 0.036152
-    b =  X * 0.051713 - Y * 0.121364 + Z * 1.011530
-    # correct gamma
-    return tuple(map(correct_xyz2rgb_gamma, (r, g, b)))
+    # Wide gamut conversion D65 and correct gamma
+    r = correct_xyz2rgb_gamma( X * 1.656492 - Y * 0.354851 - Z * 0.255038)
+    g = correct_xyz2rgb_gamma(-X * 0.707196 + Y * 1.655397 + Z * 0.036152)
+    b = correct_xyz2rgb_gamma( X * 0.051713 - Y * 0.121364 + Z * 1.011530)
+    return r, g, b
 
 
+@jit(nopython=True)
 def correct_rgb2xyz_gamma(channel):
     """
     Correct the gamma of a channel during an XYZ to sRGB conversion.
@@ -66,13 +69,14 @@ def correct_rgb2xyz_gamma(channel):
     channel /= 255
     # apply the correction
     if channel > 0.04045:
-        channel = pow((channel + 0.055) / (1.0 + 0.055), 2.4)
+        channel = pow((channel + 0.055) / 1.055, 2.4)
     else:
         channel = channel / 12.92
     return channel
 
 
-def rgb_to_xy_bri(rgb):
+@jit(nopython=True)
+def rgb_to_xy_bri(r, g, b):
     """
     Convert a color from RGB color space to x,y Brightness for Philips hue.
 
@@ -85,13 +89,26 @@ def rgb_to_xy_bri(rgb):
         - the brightness
 
     """
-    r, g, b = tuple(map(correct_rgb2xyz_gamma, rgb))
+    # correct the gamma
+    r = correct_rgb2xyz_gamma(r)
+    g = correct_rgb2xyz_gamma(g)
+    b = correct_rgb2xyz_gamma(b)
     # Wide gamut conversion D65
     X = r * 0.664511 + g * 0.154324 + b * 0.162028
     Y = r * 0.283881 + g * 0.668433 + b * 0.047685
     Z = r * 0.000088 + g * 0.072310 + b * 0.986039
+    # calculate the denominator to prevent any divide by zero errors
+    denominator = X + Y + Z
+    x = X / denominator if denominator > 0 else 0
+    y = Y / denominator if denominator > 0 else 0
+    # return the x, y tuple and shift and bound the brightness
+    return (x, y), min(255, max(0, int(Y * 255.0)))
 
-    cx = X / (X + Y + Z)
-    cy = Y / (X + Y + Z)
 
-    return (cx, cy), min(255, max(0, int(Y * 255.0)))
+# explicitly define the outward facing API of this module
+__all__ = [
+    correct_xyz2rgb_gamma.__name__,
+    xy_bri_to_rgb.__name__,
+    correct_rgb2xyz_gamma.__name__,
+    rgb_to_xy_bri.__name__
+]

@@ -1,9 +1,12 @@
 
+/* MARK: Cards */
+
 .cards {
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
     grid-gap: 5px;
+    padding: 10px;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
@@ -11,15 +14,6 @@
     border-radius: 5px;
     overflow: hidden;
 }
-/* TODO: does grid-template-columns work above to replace these below? */
-
-/*@media (min-width: 600px) {
-  .cards { grid-template-columns: repeat(2, 1fr); }
-}*/
-
-/*@media (min-width: 900px) {
-  .cards { grid-template-columns: repeat(3, 1fr); }
-}*/
 
 .hue-light-card {
     width: 200px;
