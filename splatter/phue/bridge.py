@@ -4,7 +4,7 @@ import json
 import logging
 import platform
 import socket
-from http.client import HTTPConnection, HTTPSConnection
+from http.client import HTTPConnection
 from .exceptions import PhueException, PhueRegistrationException, PhueRequestTimeout
 from .group import Group
 from .light import Light
@@ -81,36 +81,6 @@ class Bridge(object):
         self.sensors_by_id = {}
         self.sensors_by_name = {}
         self._name = None
-
-    def get_ip_address(self, set_result=False):
-        """
-        Get the bridge ip address from the meethue.com nupnp api.
-
-        Args:
-            set_result: whether to set the IP address to the bridge
-
-        Returns:
-            an IP address for a Hue bridge if one was detected, False otherwise
-
-        """
-        connection = HTTPSConnection('www.meethue.com')
-        connection.request('GET', '/api/nupnp')
-
-        logger.info('Connecting to meethue.com/api/nupnp')
-
-        result = connection.getresponse()
-        data = json.loads(str(result.read(), encoding='utf-8'))
-        # close connection after read() is done, to prevent issues with read()
-        connection.close()
-        ip_address = str(data[0]['internalipaddress'])
-
-        if ip_address != '':  # a bridge exists on the network interface
-            if set_result:  # store the IP address as the IP for this bridge
-                self.ip_address = ip_address
-            return ip_address
-
-        # a bridge doesn't exist on the network interface
-        return False
 
     def register_app(self):
         """Register this computer with the Hue bridge hardware and save the resulting access token."""
