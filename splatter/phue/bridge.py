@@ -90,6 +90,8 @@ class Bridge:
         self.lights_by_name = {}
         self.sensors_by_id = {}
         self.sensors_by_name = {}
+        self.groups_by_id = {}
+        self.groups_by_name = {}
         self._name = None
 
     @property
@@ -483,6 +485,23 @@ class Bridge:
             if name == groups[group_id]['name']:
                 return int(group_id)
         return False
+
+    def get_group_objects(self, mode='list'):
+        """Returns a collection containing the groups, either by name or id (use 'id' or 'name' as the mode)
+        The returned collection can be either a list (default), or a dict.
+        Set mode='id' for a dict by sensor ID, or mode='name' for a dict by sensor name.   """
+        if self.groups_by_id == {}:
+            groups = self.request('GET', '/api/' + self.username + '/groups/')
+            for group in groups:
+                self.groups_by_id[int(group)] = Group(self, int(group))
+                self.groups_by_name[groups[group][
+                    'name']] = self.groups_by_id[int(group)]
+        if mode == 'id':
+            return self.groups_by_id
+        if mode == 'name':
+            return self.groups_by_name
+        if mode == 'list':
+            return self.groups_by_id.values()
 
     def get_group(self, group_id=None, parameter=None):
         if isinstance(group_id, str):
