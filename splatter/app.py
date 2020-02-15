@@ -81,11 +81,7 @@ def register():
         bridge.register()
     except phue.PhueRegistrationException:
         return {'PhueRegistrationException': 0}
-    if bridge.can_login:
-        lights = sorted(bridge.lights, key=lambda x: x.name)
-        return flask.render_template("home.html", lights=lights)
-    # TODO get IP from UPnP before returning register (return fail is no IP found)
-    return flask.render_template("register.html")
+    return {'redirect': '/'}
 
 
 @app.route("/lights", methods=['POST'])
