@@ -1,5 +1,4 @@
 """A container for a scene."""
-from .util import encodeString
 
 
 class Scene(object):
@@ -17,7 +16,7 @@ class Scene(object):
         else:
             self.lights = []
         self.locked = locked
-        self.name = encodeString(name)
+        self.name = name
         self.owner = owner
         self.picture = picture
         self.recycle = recycle

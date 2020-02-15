@@ -29,7 +29,7 @@ class Group(Light):
             name = group_id
             groups = bridge.get_group()
             for idnumber, info in groups.items():
-                if info['name'] == decodeString(name):
+                if info['name'] == name:
                     self.group_id = int(idnumber)
                     break
             else:
@@ -56,7 +56,7 @@ class Group(Light):
     @property
     def name(self):
         '''Get or set the name of the light group [string]'''
-        return encodeString(self._get('name'))
+        return self._get('name')
 
     @name.setter
     def name(self, value):

@@ -63,7 +63,7 @@ class Sensor(object):
     @property
     def name(self):
         '''Get or set the name of the sensor [string]'''
-        return encodeString(self._get('name'))
+        return self._get('name')
 
     @name.setter
     def name(self, value):

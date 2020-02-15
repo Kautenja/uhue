@@ -179,7 +179,7 @@ class Bridge(object):
         """ Lookup a light id based on string name. Case-sensitive. """
         lights = self.get_light()
         for light_id in lights:
-            if decodeString(name) == lights[light_id]['name']:
+            if name == lights[light_id]['name']:
                 return light_id
         return False
 
@@ -205,7 +205,7 @@ class Bridge(object):
         """ Lookup a sensor id based on string name. Case-sensitive. """
         sensors = self.get_sensor()
         for sensor_id in sensors:
-            if decodeString(name) == sensors[sensor_id]['name']:
+            if name == sensors[sensor_id]['name']:
                 return sensor_id
         return False
 
@@ -236,7 +236,7 @@ class Bridge(object):
             return self.lights_by_id[key]
         except:
             try:
-                return self.lights_by_name[decodeString(key)]
+                return self.lights_by_name[key]
             except:
                 raise KeyError(
                     'Not a valid key (integer index starting with 1, or light name): ' + str(key))
@@ -462,7 +462,7 @@ class Bridge(object):
         """ Lookup a group id based on string name. Case-sensitive. """
         groups = self.get_group()
         for group_id in groups:
-            if decodeString(name) == groups[group_id]['name']:
+            if name == groups[group_id]['name']:
                 return int(group_id)
         return False
 

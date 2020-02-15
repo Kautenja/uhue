@@ -32,13 +32,3 @@ def config_file_path(config_file_path=None):
 def is_string(data):
     """Utility method to see if data is a string."""
     return isinstance(data, str)
-
-
-def encodeString(string):
-    """Utility method to encode strings as utf-8."""
-    return string
-
-
-def decodeString(string):
-    """Utility method to decode strings as utf-8."""
-    return string
