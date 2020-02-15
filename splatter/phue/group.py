@@ -1,6 +1,9 @@
 """A group of hue lights tracked by the bridge."""
-from .util import *
+import logging
 from .light import Light
+
+
+logger = logging.getLogger('phue')
 
 
 class Group(Light):

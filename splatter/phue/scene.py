@@ -1,4 +1,8 @@
 """A container for a scene."""
+import logging
+
+
+logger = logging.getLogger('phue')
 
 
 class Scene(object):

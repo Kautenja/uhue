@@ -1,14 +1,38 @@
 """An interface to the Hue ZigBee bridge."""
 import os
 import json
+import logging
 import platform
 import socket
+from http.client import HTTPConnection, HTTPSConnection
 from .exceptions import PhueException, PhueRegistrationException, PhueRequestTimeout
-from .util import *
 from .light import Light
 from .group import Group
 from .scene import Scene
 from .sensor import Sensor
+
+
+logger = logging.getLogger('phue')
+
+
+if platform.system() == 'Windows':
+    USER_HOME = 'USERPROFILE'
+else:
+    USER_HOME = 'HOME'
+
+
+# the default name for the configuration file
+CONFIG_FILE_NAME = '.python_hue'
+
+
+def config_file_path(config_file_path=None):
+    if config_file_path is not None:  # user specified config file
+        return config_file_path
+    elif os.getenv(USER_HOME) is not None and os.access(os.getenv(USER_HOME), os.W_OK):
+        return os.path.join(os.getenv(USER_HOME), CONFIG_FILE_NAME)
+    elif 'iPad' in platform.machine() or 'iPhone' in platform.machine():
+        return os.path.join(os.getenv(USER_HOME), 'Documents', CONFIG_FILE_NAME)
+    return os.path.join(os.getcwd(), CONFIG_FILE_NAME)
 
 
 class Bridge(object):
@@ -65,7 +89,7 @@ class Bridge(object):
             an IP address for a Hue bridge if one was detected, False otherwise
 
         """
-        connection = httplib.HTTPSConnection('www.meethue.com')
+        connection = HTTPSConnection('www.meethue.com')
         connection.request('GET', '/api/nupnp')
 
         logger.info('Connecting to meethue.com/api/nupnp')
@@ -83,6 +107,26 @@ class Bridge(object):
 
         # a bridge doesn't exist on the network interface
         return False
+
+    def register_app(self):
+        """Register this computer with the Hue bridge hardware and save the resulting access token."""
+        registration_request = {"devicetype": "python_hue"}
+        response = self.request('POST', '/api', registration_request)
+        for line in response:
+            for key in line:
+                if 'success' in key:
+                    with open(self.config_file_path, 'w') as f:
+                        logger.info(
+                            'Writing configuration file to ' + self.config_file_path)
+                        f.write(json.dumps({self.ip: line['success']}))
+                        logger.info('Reconnecting to the bridge')
+                    self.connect()
+                if 'error' in key:
+                    error_type = line['error']['type']
+                    if error_type == 101:
+                        raise PhueRegistrationException(error_type, 'The link button has not been pressed in the last 30 seconds.')
+                    if error_type == 7:
+                        raise PhueException(error_type, 'Unknown username')
 
     @property
     def is_connected(self):
@@ -113,29 +157,9 @@ class Bridge(object):
             logger.info('Error opening config file, will attempt bridge registration')
             self.register_app()
 
-    def register_app(self):
-        """Register this computer with the Hue bridge hardware and save the resulting access token."""
-        registration_request = {"devicetype": "python_hue"}
-        response = self.request('POST', '/api', registration_request)
-        for line in response:
-            for key in line:
-                if 'success' in key:
-                    with open(self.config_file_path, 'w') as f:
-                        logger.info(
-                            'Writing configuration file to ' + self.config_file_path)
-                        f.write(json.dumps({self.ip: line['success']}))
-                        logger.info('Reconnecting to the bridge')
-                    self.connect()
-                if 'error' in key:
-                    error_type = line['error']['type']
-                    if error_type == 101:
-                        raise PhueRegistrationException(error_type, 'The link button has not been pressed in the last 30 seconds.')
-                    if error_type == 7:
-                        raise PhueException(error_type, 'Unknown username')
-
     def request(self, mode='GET', address=None, data=None):
         """ Utility function for HTTP GET/PUT requests for the API"""
-        connection = httplib.HTTPConnection(self.ip, timeout=10)
+        connection = HTTPConnection(self.ip, timeout=10)
 
         try:
             if mode == 'GET' or mode == 'DELETE':
