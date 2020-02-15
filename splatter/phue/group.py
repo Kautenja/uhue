@@ -5,6 +5,14 @@ from .light import Light
 
 logger = logging.getLogger('phue')
 
+# TODO: can't access "reachable"
+# TODO: can't access "uniqueid"
+# TODO: can't access "modelid"
+# TODO: can't access "manufacturername"
+# TODO: can't access "productname"
+# TODO: can't access "type"
+# TODO: can't access "config"
+# TODO: can't access "capabilities"
 
 class Group(Light):
     """
