@@ -19,7 +19,8 @@ def find_bridge():
     data = json.loads(str(result.read(), encoding='utf-8'))
     # close connection after read() is done, to prevent issues with read()
     connection.close()
-    return str(data[0]['internalipaddress'])
+    ip_address = str(data[0]['internalipaddress'])
+    return ip_address if ip_address != '' else None
 
 
 # explicitly define the outward facing API of this module
