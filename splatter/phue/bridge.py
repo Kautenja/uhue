@@ -124,7 +124,7 @@ class Bridge:
                     if error_type == 7:
                         raise PhueException(error_type, 'Unknown username')
 
-    def load_config_file(self):
+    def load_config_file(self) -> None:
         """Connect to the Hue bridge."""
         logger.info(f'Loading bridge credentials from "{self.config_file_path}"')
         # check for existence of the file
