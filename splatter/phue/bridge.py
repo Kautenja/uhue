@@ -16,23 +16,33 @@ from .sensor import Sensor
 logger = logging.getLogger('phue')
 
 
-if platform.system() == 'Windows':
-    USER_HOME = 'USERPROFILE'
-else:
-    USER_HOME = 'HOME'
-
-
 # the default name for the configuration file
 CONFIG_FILE_NAME = '.python_hue'
 
 
-def unwrap_config_file_path(config_file_path=None):
-    if config_file_path is not None:  # user specified config file
+def unwrap_config_file_path(config_file_path: str = None):
+    """
+    Unwrap the path to the configuration file.
+
+    Args:
+        config_file_path: the path to the configuration file
+
+    Returns:
+        a formatted path to the configuration file
+
+    """
+    # get the user home directory
+    user_home = 'USERPROFILE' if platform.system() == 'Windows' else 'HOME'
+    # user specified configuration file
+    if config_file_path is not None:
         return config_file_path
-    elif os.getenv(USER_HOME) is not None and os.access(os.getenv(USER_HOME), os.W_OK):
-        return os.path.join(os.getenv(USER_HOME), CONFIG_FILE_NAME)
-    elif 'iPad' in platform.machine() or 'iPhone' in platform.machine():
-        return os.path.join(os.getenv(USER_HOME), 'Documents', CONFIG_FILE_NAME)
+    # write access to user home
+    if os.getenv(user_home) is not None and os.access(os.getenv(user_home), os.W_OK):
+        return os.path.join(os.getenv(user_home), CONFIG_FILE_NAME)
+    # iOS platform
+    if 'iPad' in platform.machine() or 'iPhone' in platform.machine():
+        return os.path.join(os.getenv(user_home), 'Documents', CONFIG_FILE_NAME)
+    # use current working directory
     return os.path.join(os.getcwd(), CONFIG_FILE_NAME)
 
 
