@@ -5,7 +5,7 @@ function register_hue() {
     $.ajax({
         type: "POST",
         contentType: "application/json; charset=utf-8",
-        url: "/register",
+        url: "/hue/register",
         data: JSON.stringify({}),
         success: function (data) {
             if ("PhueRegistrationException" in data) {

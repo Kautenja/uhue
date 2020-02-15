@@ -15,6 +15,11 @@ if bridge.has_config_file:
     bridge.load_config_file()
 
 
+# ----------------------------------------------------------------------------
+# MARK: Metadata Hooks
+# ----------------------------------------------------------------------------
+
+
 @app.route('/site.webmanifest')
 def webmanifest():
     """Return the web manifest associated with the application."""
@@ -60,22 +65,16 @@ def apple_touch_icon():
     )
 
 
+# ----------------------------------------------------------------------------
+# MARK: Page Hooks
+# ----------------------------------------------------------------------------
+
+
 @app.route("/")
 def home():
     """Return the home page."""
     # TODO: allow setting of different home page
     return flask.redirect('/lights')
-
-
-@app.route("/register", methods=['POST'])
-def register():
-    """Return the home page."""
-    try:
-        bridge.register()
-    except phue.PhueRegistrationException:
-        return {'PhueRegistrationException': 0}
-    # return {'redirect': '/'}
-    return flask.redirect('/')
 
 
 def render_register_page():
@@ -126,14 +125,29 @@ def sensors():
 def animations():
     """Return the animations page."""
     if bridge.can_login:
+        # TODO: animation design
         return flask.render_template("animations.html")
     return render_register_page()
 
 
-# TODO: change to api end point?
+# ----------------------------------------------------------------------------
+# MARK: Hue API
+# ----------------------------------------------------------------------------
 
 
-@app.route("/lights", methods=['POST'])
+@app.route("/hue/register", methods=['POST'])
+def register():
+    """Return the home page."""
+    try:
+        bridge.register()
+    except phue.PhueRegistrationException:
+        return {'PhueRegistrationException': 0}
+    # return {'redirect': '/'}
+    # TODO: test this
+    return flask.redirect('/')
+
+
+@app.route("/hue/lights", methods=['POST'])
 def light():
     """Handle a light command"""
     data = flask.request.json

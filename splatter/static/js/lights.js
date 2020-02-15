@@ -11,7 +11,7 @@ function set_light(light_id, parameter, value) {
     $.ajax({
         type: "POST",
         contentType: "application/json; charset=utf-8",
-        url: "/lights",
+        url: "/hue/lights",
         data: JSON.stringify({
             "light_id": light_id,
             "parameter": parameter,
