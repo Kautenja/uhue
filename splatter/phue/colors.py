@@ -91,7 +91,13 @@ def rgb_to_xy_bri(rgb):
     Y = r * 0.283881 + g * 0.668433 + b * 0.047685
     Z = r * 0.000088 + g * 0.072310 + b * 0.986039
 
-    cx = X / (X + Y + Z)
-    cy = Y / (X + Y + Z)
+    # calculate the denominator to prevent any divide by zero errors
+    denominator = X + Y + Z
+    if denominator == 0:
+        x = 0
+        y = 0
+    else:
+        x = X / denominator
+        y = Y / denominator
 
-    return (cx, cy), min(255, max(0, int(Y * 255.0)))
+    return (x, y), min(255, max(0, int(Y * 255.0)))
