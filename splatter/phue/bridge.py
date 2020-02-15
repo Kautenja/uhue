@@ -308,8 +308,7 @@ class Bridge:
             data = {parameter: value}
 
         if transitiontime is not None:
-            data['transitiontime'] = int(round(
-                transitiontime))  # must be int for request format
+            data['transitiontime'] = int(round(transitiontime))  # must be int for request format
 
         light_id_array = light_id
         if isinstance(light_id, int) or isinstance(light_id, str):
@@ -318,18 +317,15 @@ class Bridge:
         for light in light_id_array:
             logger.debug(str(data))
             if parameter == 'name':
-                result.append(self.request('PUT', '/api/' + self.username + '/lights/' + str(
-                    light_id), data))
+                result.append(self.request('PUT', '/api/' + self.username + '/lights/' + str(light_id), data))
             else:
                 if isinstance(light, str):
                     converted_light = self.get_light_id_by_name(light)
                 else:
                     converted_light = light
-                result.append(self.request('PUT', '/api/' + self.username + '/lights/' + str(
-                    converted_light) + '/state', data))
+                result.append(self.request('PUT', '/api/' + self.username + '/lights/' + str(converted_light) + '/state', data))
             if 'error' in list(result[-1][0].keys()):
-                logger.warn("ERROR: {0} for light {1}".format(
-                    result[-1][0]['error']['description'], light))
+                logger.warn("ERROR: {0} for light {1}".format(result[-1][0]['error']['description'], light))
 
         logger.debug(result)
         return result
@@ -406,8 +402,7 @@ class Bridge:
         result = self.request('PUT', '/api/' + self.username + '/sensors/' + str(
             sensor_id), data)
         if 'error' in list(result[0].keys()):
-            logger.warn("ERROR: {0} for sensor {1}".format(
-                result[0]['error']['description'], sensor_id))
+            logger.warn("ERROR: {0} for sensor {1}".format(result[0]['error']['description'], sensor_id))
 
         logger.debug(result)
         return result
@@ -451,8 +446,7 @@ class Bridge:
         result = self.request('PUT', '/api/' + self.username + '/sensors/' + str(
             sensor_id) + "/" + structure, data)
         if 'error' in list(result[0].keys()):
-            logger.warn("ERROR: {0} for sensor {1}".format(
-                result[0]['error']['description'], sensor_id))
+            logger.warn("ERROR: {0} for sensor {1}".format(result[0]['error']['description'], sensor_id))
 
         logger.debug(result)
         return result
@@ -494,8 +488,7 @@ class Bridge:
             groups = self.request('GET', '/api/' + self.username + '/groups/')
             for group in groups:
                 self.groups_by_id[int(group)] = Group(self, int(group))
-                self.groups_by_name[groups[group][
-                    'name']] = self.groups_by_id[int(group)]
+                self.groups_by_name[groups[group]['name']] = self.groups_by_id[int(group)]
         if mode == 'id':
             return self.groups_by_id
         if mode == 'name':
