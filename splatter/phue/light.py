@@ -308,7 +308,7 @@ class Light(object):
             None
 
         """
-        self.xy, self.brightness = rgb_to_xy_bri(value)
+        self.xy, self.brightness = rgb_to_xy_bri(*value)
 
     @property
     def color_hex(self):
