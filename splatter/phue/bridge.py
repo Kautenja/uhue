@@ -6,6 +6,7 @@ import platform
 import socket
 from http.client import HTTPConnection
 from .exceptions import PhueException, PhueRegistrationException, PhueRequestTimeout
+from .upnp import find_bridge
 from .group import Group
 from .light import Light
 from .scene import Scene
