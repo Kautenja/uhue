@@ -15,6 +15,13 @@ if bridge.has_config_file:
     bridge.load_config_file()
 
 
+# TODO: move to utility module
+def hex_to_rgb(value: str) -> tuple:
+    """Convert a hexadecimal string to an RGB tuple."""
+    hlen = len(value)
+    return tuple(int(value[i : i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
+
+
 # ----------------------------------------------------------------------------
 # MARK: Metadata Hooks
 # ----------------------------------------------------------------------------
@@ -152,9 +159,7 @@ def hue_lights():
     """Handle a lights endpoint"""
     data = flask.request.json
     if data['parameter'] == 'color':
-        value = data['value'].lstrip('#')
-        hlen = len(value)
-        rgb = tuple(int(value[i : i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
+        rgb = hex_to_rgb(data['value'].lstrip('#'))
         bridge[int(data['light_id'])].color = rgb
         return 'set value'
     if data['parameter'] == 'on':
@@ -170,9 +175,7 @@ def hue_groups():
     """Handle a groups endpoint"""
     data = flask.request.json
     if data['parameter'] == 'color':
-        value = data['value'].lstrip('#')
-        hlen = len(value)
-        rgb = tuple(int(value[i : i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
+        rgb = hex_to_rgb(data['value'].lstrip('#'))
         # TODO: map group ID to group objects in the Bridge
         for group in bridge.groups:
             if group.group_id == data['group_id']:
