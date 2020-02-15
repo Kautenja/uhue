@@ -27,8 +27,3 @@ def config_file_path(config_file_path=None):
     elif 'iPad' in platform.machine() or 'iPhone' in platform.machine():
         return os.path.join(os.getenv(USER_HOME), 'Documents', CONFIG_FILE_NAME)
     return os.path.join(os.getcwd(), CONFIG_FILE_NAME)
-
-
-def is_string(data):
-    """Utility method to see if data is a string."""
-    return isinstance(data, str)

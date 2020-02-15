@@ -252,7 +252,7 @@ class Bridge(object):
 
     def get_light(self, light_id=None, parameter=None):
         """ Gets state by light_id and parameter"""
-        if is_string(light_id):
+        if isinstance(light_id, str):
             light_id = self.get_light_id_by_name(light_id)
         if light_id is None:
             return self.request('GET', '/api/' + self.username + '/lights/')
@@ -292,7 +292,7 @@ class Bridge(object):
                 transitiontime))  # must be int for request format
 
         light_id_array = light_id
-        if isinstance(light_id, int) or is_string(light_id):
+        if isinstance(light_id, int) or isinstance(light_id, str):
             light_id_array = [light_id]
         result = []
         for light in light_id_array:
@@ -301,7 +301,7 @@ class Bridge(object):
                 result.append(self.request('PUT', '/api/' + self.username + '/lights/' + str(
                     light_id), data))
             else:
-                if is_string(light):
+                if isinstance(light, str):
                     converted_light = self.get_light_id_by_name(light)
                 else:
                     converted_light = light
@@ -354,7 +354,7 @@ class Bridge(object):
     def get_sensor(self, sensor_id=None, parameter=None):
         """ Gets state by sensor_id and parameter"""
 
-        if is_string(sensor_id):
+        if isinstance(sensor_id, str):
             sensor_id = self.get_sensor_id_by_name(sensor_id)
         if sensor_id is None:
             return self.request('GET', '/api/' + self.username + '/sensors/')
@@ -467,7 +467,7 @@ class Bridge(object):
         return False
 
     def get_group(self, group_id=None, parameter=None):
-        if is_string(group_id):
+        if isinstance(group_id, str):
             group_id = self.get_group_id_by_name(group_id)
         if group_id is False:
             logger.error('Group name does not exist')
@@ -504,12 +504,12 @@ class Bridge(object):
                 transitiontime))  # must be int for request format
 
         group_id_array = group_id
-        if isinstance(group_id, int) or is_string(group_id):
+        if isinstance(group_id, int) or isinstance(group_id, str):
             group_id_array = [group_id]
         result = []
         for group in group_id_array:
             logger.debug(str(data))
-            if is_string(group):
+            if isinstance(group, str):
                 converted_group = self.get_group_id_by_name(group)
             else:
                 converted_group = group
