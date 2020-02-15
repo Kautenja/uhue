@@ -60,17 +60,11 @@ def apple_touch_icon():
     )
 
 
-# TODO: redirect instead of using lights pages in home page
 @app.route("/")
 def home():
     """Return the home page."""
-    if bridge.can_login:
-        lights = sorted(bridge.lights, key=lambda x: x.name)
-        return flask.render_template("home.html", lights=lights)
-    bridge.ip_address = phue.find_bridge()
-    if bridge.ip_address is None:  # TODO: bridge not found page
-        return 400
-    return flask.render_template("register.html", ip_address=bridge.ip_address)
+    # TODO: allow setting of different home page
+    return flask.redirect('/lights')
 
 
 @app.route("/register", methods=['POST'])
@@ -97,7 +91,7 @@ def lights():
     """Return the lights page."""
     if bridge.can_login:
         lights_ = sorted(bridge.lights, key=lambda x: x.name)
-        return flask.render_template("home.html", lights=lights_)
+        return flask.render_template("lights.html", lights=lights_)
     return render_register_page()
 
 
