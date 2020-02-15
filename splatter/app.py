@@ -148,8 +148,8 @@ def register():
 
 
 @app.route("/hue/lights", methods=['POST'])
-def light():
-    """Handle a light command"""
+def hue_lights():
+    """Handle a lights endpoint"""
     data = flask.request.json
     if data['parameter'] == 'color':
         value = data['value'].lstrip('#')
@@ -162,4 +162,25 @@ def light():
     else:
         data['value'] = int(data['value'])
     bridge.set_light(int(data['light_id']), data['parameter'], data['value'])
+    return 'set value'
+
+
+@app.route("/hue/groups", methods=['POST'])
+def hue_groups():
+    """Handle a groups endpoint"""
+    data = flask.request.json
+    if data['parameter'] == 'color':
+        value = data['value'].lstrip('#')
+        hlen = len(value)
+        rgb = tuple(int(value[i : i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
+        # TODO: map group ID to group objects in the Bridge
+        for group in bridge.groups:
+            if group.group_id == data['group_id']:
+                group.color = rgb
+        return 'set value'
+    if data['parameter'] == 'on':
+        data['value'] = bool(data['value'])
+    else:
+        data['value'] = int(data['value'])
+    bridge.set_group(int(data['group_id']), data['parameter'], data['value'])
     return 'set value'

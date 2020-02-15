@@ -5,6 +5,7 @@ from .light import Light
 
 logger = logging.getLogger('phue')
 
+
 # TODO: can't access "reachable"
 # TODO: can't access "uniqueid"
 # TODO: can't access "modelid"
@@ -13,6 +14,7 @@ logger = logging.getLogger('phue')
 # TODO: can't access "type"
 # TODO: can't access "config"
 # TODO: can't access "capabilities"
+
 
 class Group(Light):
     """
@@ -90,19 +92,3 @@ class Group(Light):
         logger.debug("Setting lights in group {0} to {1}".format(
             self.group_id, str(value)))
         self._set('lights', value)
-
-
-# class AllLights(Group):
-
-#     """ All the Hue lights connected to your bridge
-
-#     This makes use of the semi-documented feature that
-#     "Group 0" of lights appears to be a group automatically
-#     consisting of all lights.  This is not returned by
-#     listing the groups, but is accessible if you explicitly
-#     ask for group 0.
-#     """
-#     def __init__(self, bridge=None):
-#         if bridge is None:
-#             bridge = Bridge()
-#         Group.__init__(self, bridge, 0)

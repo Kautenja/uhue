@@ -66,7 +66,7 @@
   <div class="cards">
   {% for group in groups %}
   <div class="card hue-light-card">
-    <button class="activator card-image waves-effect waves-block waves-light jscolor {valueElement:null,value:'{{group.color_hex}}',onFineChange:'set_color({{ group.light_id }}, this)'} color-button">
+    <button class="activator card-image waves-effect waves-block waves-light jscolor {valueElement:null,value:'{{group.color_hex}}',onFineChange:'set_group_color({{ group.group_id }}, this)'} color-button">
     </button>
     <span class="card-title">{{ group.name }}</span>
     <div class="card-content">
@@ -81,7 +81,7 @@
       <!-- <p>alert {{ group.alert }} </p> -->
       <div class="switch">
         <label>
-          <input {% if group.on %}checked{% else %}{% endif %} type="checkbox" onclick="set_on({{ group.light_id }}, this)">
+          <input {% if group.on %}checked{% else %}{% endif %} type="checkbox" onclick="set_group_on({{ group.group_id }}, this)">
           <span class="lever"></span>
         </label>
       </div>
@@ -89,7 +89,7 @@
       <span class="card-subtitle">Brightness</span>
       <form action="#">
         <p class="range-field">
-          <input type="range" value="{{ group.brightness }}" min="0" max="254" onchange="set_light({{ group.light_id }}, 'bri', this.value)"/>
+          <input type="range" value="{{ group.brightness }}" min="0" max="254" onchange="set_group({{ group.group_id }}, 'bri', this.value)"/>
         </p>
       </form>
     </div>
@@ -109,7 +109,7 @@
   <script type="text/javascript" src="{{ url_for('static', filename='js/vendor/jscolor.js') }}"></script>
   <!-- load local JavaScript -->
   <script type="text/javascript" src="{{ url_for('static', filename='js/nav.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='js/groups.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/api.js') }}"></script>
 </body>
 
 </html>

@@ -66,7 +66,7 @@
   <div class="cards">
   {% for light in lights %}
   <div class="card hue-light-card">
-    <button class="card-image waves-effect waves-block waves-light jscolor {valueElement:null,value:'{{light.color_hex}}',onFineChange:'set_color({{ light.light_id }}, this)'} color-button">
+    <button class="card-image waves-effect waves-block waves-light jscolor {valueElement:null,value:'{{light.color_hex}}',onFineChange:'set_light_color({{ light.light_id }}, this)'} color-button">
       <img class="activator" src="{{ url_for('static', filename='img/hue/' + light.config['archetype'] + '.svg') }}">
     </button>
     <span class="card-title">{{ light.name }}</span>
@@ -91,7 +91,7 @@
       <!-- <p>capabilities {{ light.capabilities }} </p> -->
       <div class="switch">
         <label>
-          <input {% if light.on %}checked{% else %}{% endif %} type="checkbox" onclick="set_on({{ light.light_id }}, this)">
+          <input {% if light.on %}checked{% else %}{% endif %} type="checkbox" onclick="set_light_on({{ light.light_id }}, this)">
           <span class="lever"></span>
         </label>
       </div>
@@ -119,7 +119,7 @@
   <script type="text/javascript" src="{{ url_for('static', filename='js/vendor/jscolor.js') }}"></script>
   <!-- load local JavaScript -->
   <script type="text/javascript" src="{{ url_for('static', filename='js/nav.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='js/lights.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/api.js') }}"></script>
 </body>
 
 </html>

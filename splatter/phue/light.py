@@ -42,7 +42,6 @@ class Light:
         return self.bridge.get_light(self.light_id, *args, **kwargs)
 
     def _set(self, *args, **kwargs):
-
         if self.transitiontime is not None:
             kwargs['transitiontime'] = self.transitiontime
             logger.debug("Setting with transitiontime = {0} ds = {1} s".format(
