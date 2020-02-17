@@ -225,14 +225,6 @@ class Bridge:
     # MARK: Lights
     #
 
-    def get_light_id_by_name(self, name: str):
-        """ Lookup a light id based on string name. Case-sensitive. """
-        lights = self.get_light()
-        for light_id in lights:
-            if name == lights[light_id]['name']:
-                return light_id
-        return False
-
     def get_light_objects(self, mode: str = 'list') -> 'Union[list,dict]':
         """
         Return a collection containing the lights, either by name or id.
@@ -287,6 +279,14 @@ class Bridge:
                 'Not a valid key, parameter %s is not associated with light %s)'
                 % (parameter, light_id))
 
+    def get_light_id_by_name(self, name: str):
+        """ Lookup a light id based on string name. Case-sensitive. """
+        lights = self.get_light()
+        for light_id in lights:
+            if name == lights[light_id]['name']:
+                return light_id
+        return False
+
     def set_light(self, light_id, parameter, value=None, transitiontime=None):
         """ Adjust properties of one or more lights.
 
@@ -332,18 +332,19 @@ class Bridge:
     # MARK: Groups
     #
 
-    @property
-    def groups(self):
-        """ Access groups as a list """
-        return [Group(self, int(groupid)) for groupid in self.get_group().keys()]
+    def create_group(self, name, lights=None):
+        """ Create a group of lights
 
-    def get_group_id_by_name(self, name):
-        """ Lookup a group id based on string name. Case-sensitive. """
-        groups = self.get_group()
-        for group_id in groups:
-            if name == groups[group_id]['name']:
-                return int(group_id)
-        return False
+        Parameters
+        ------------
+        name : string
+            Name for this group of lights
+        lights : list
+            List of lights to be in the group.
+
+        """
+        data = {'lights': [str(x) for x in lights], 'name': name}
+        return self.request('POST', f'/api/{self.username}/groups/', data)
 
     def get_group_objects(self, mode: str = 'list') -> 'Union[list,dict]':
         """Returns a collection containing the groups, either by name or id (use 'id' or 'name' as the mode)
@@ -361,6 +362,11 @@ class Bridge:
         if mode == 'list':
             return self.groups_by_id.values()
 
+    @property
+    def groups(self):
+        """ Access groups as a list """
+        return [Group(self, int(groupid)) for groupid in self.get_group().keys()]
+
     def get_group(self, group_id=None, parameter=None):
         if isinstance(group_id, str):
             group_id = self.get_group_id_by_name(group_id)
@@ -374,6 +380,14 @@ class Bridge:
         if parameter in {'name', 'lights'}:
             return self.request('GET', f'/api/{self.username}/groups/{group_id}')[parameter]
         return self.request('GET', f'/api/{self.username}/groups/{group_id}')['action'][parameter]
+
+    def get_group_id_by_name(self, name):
+        """ Lookup a group id based on string name. Case-sensitive. """
+        groups = self.get_group()
+        for group_id in groups:
+            if name == groups[group_id]['name']:
+                return int(group_id)
+        return False
 
     def set_group(self, group_id, parameter, value=None, transitiontime=None):
         """ Change light settings for a group
@@ -422,20 +436,6 @@ class Bridge:
         logger.debug(result)
         return result
 
-    def create_group(self, name, lights=None):
-        """ Create a group of lights
-
-        Parameters
-        ------------
-        name : string
-            Name for this group of lights
-        lights : list
-            List of lights to be in the group.
-
-        """
-        data = {'lights': [str(x) for x in lights], 'name': name}
-        return self.request('POST', f'/api/{self.username}/groups/', data)
-
     def delete_group(self, group_id):
         return self.request('DELETE', f'/api/{self.username}/groups/{group_id}')
 
@@ -443,27 +443,18 @@ class Bridge:
     # MARK: Scenes
     #
 
-    def delete_scene(self, scene_id):
-        try:
-            return self.request('DELETE', f'/api/{self.username}/scenes/{scene_id}')
-        except:
-            logger.debug("Unable to delete scene with ID {0}".format(scene_id))
-
-    def delete_sensor(self, sensor_id):
-        try:
-            name = self.sensors_by_id[sensor_id].name
-            del self.sensors_by_name[name]
-            del self.sensors_by_id[sensor_id]
-            return self.request('DELETE', f'/api/{self.username}/sensors/{sensor_id}')
-        except:
-            logger.debug("Unable to delete nonexistent sensor with ID %d", sensor_id)
+    def get_scene(self):
+        return self.request('GET', f'/api/{self.username}/scenes')
 
     @property
     def scenes(self):
         return [Scene(k, **v) for k, v in self.get_scene().items()]
 
-    def get_scene(self):
-        return self.request('GET', f'/api/{self.username}/scenes')
+    def delete_scene(self, scene_id):
+        try:
+            return self.request('DELETE', f'/api/{self.username}/scenes/{scene_id}')
+        except:
+            logger.debug("Unable to delete scene with ID {0}".format(scene_id))
 
     def activate_scene(self, group_id, scene_id, transition_time=4):
         return self.request('PUT', f'/api/{self.username}/groups/{group_id}/action', {
@@ -519,12 +510,6 @@ class Bridge:
     # MARK: Schedules
     #
 
-    def get_schedule(self, schedule_id=None, parameter=None):
-        if schedule_id is None:
-            return self.request('GET', f'/api/{self.username}/schedules')
-        if parameter is None:
-            return self.request('GET', f'/api/{self.username}/schedules/{schedule_id}')
-
     def create_schedule(self, name, time, light_id, data, description=' '):
         return self.request('POST', f'/api/{self.username}/schedules', {
             'name': name,
@@ -536,13 +521,6 @@ class Bridge:
                 'body': data
             }
         })
-
-    def set_schedule_attributes(self, schedule_id, attributes):
-        """
-        :param schedule_id: The ID of the schedule
-        :param attributes: Dictionary with attributes and their new values
-        """
-        return self.request('PUT', f'/api/{self.username}/schedules/{schedule_id}', data=attributes)
 
     def create_group_schedule(self, name, time, group_id, data, description=' '):
         return self.request('POST', f'/api/{self.username}/schedules', {
@@ -556,41 +534,25 @@ class Bridge:
             }
         })
 
+    def get_schedule(self, schedule_id=None, parameter=None):
+        if schedule_id is None:
+            return self.request('GET', f'/api/{self.username}/schedules')
+        if parameter is None:
+            return self.request('GET', f'/api/{self.username}/schedules/{schedule_id}')
+
+    def set_schedule_attributes(self, schedule_id, attributes):
+        """
+        :param schedule_id: The ID of the schedule
+        :param attributes: Dictionary with attributes and their new values
+        """
+        return self.request('PUT', f'/api/{self.username}/schedules/{schedule_id}', data=attributes)
+
     def delete_schedule(self, schedule_id):
         return self.request('DELETE', f'/api/{self.username}/schedules/{schedule_id}')
 
     #
     # MARK: Sensors
     #
-
-    def get_sensor_id_by_name(self, name):
-        """ Lookup a sensor id based on string name. Case-sensitive. """
-        sensors = self.get_sensor()
-        for sensor_id in sensors:
-            if name == sensors[sensor_id]['name']:
-                return sensor_id
-        return False
-
-    def get_sensor_objects(self, mode: str = 'list') -> 'Union[list,dict]':
-        """Returns a collection containing the sensors, either by name or id (use 'id' or 'name' as the mode)
-        The returned collection can be either a list (default), or a dict.
-        Set mode='id' for a dict by sensor ID, or mode='name' for a dict by sensor name.   """
-        if self.sensors_by_id == {}:
-            sensors = self.request('GET', f'/api/{self.username}/sensors/')
-            for sensor in sensors:
-                self.sensors_by_id[int(sensor)] = Sensor(self, int(sensor))
-                self.sensors_by_name[sensors[sensor]['name']] = self.sensors_by_id[int(sensor)]
-        if mode == 'id':
-            return self.sensors_by_id
-        if mode == 'name':
-            return self.sensors_by_name
-        if mode == 'list':
-            return self.sensors_by_id.values()
-
-    @property
-    def sensors(self):
-        """ Access sensors as a list """
-        return self.get_sensor_objects()
 
     def create_sensor(self, name, modelid, swversion, sensor_type, uniqueid, manufacturername, state={}, config={}, recycle=False):
         """ Create a new sensor in the bridge. Returns (ID,None) of the new sensor or (None,message) if creation failed. """
@@ -622,6 +584,27 @@ class Bridge:
             logger.debug(f"Failed to create sensor: {repr(result[0])}")
             return None, result[0]
 
+    def get_sensor_objects(self, mode: str = 'list') -> 'Union[list,dict]':
+        """Returns a collection containing the sensors, either by name or id (use 'id' or 'name' as the mode)
+        The returned collection can be either a list (default), or a dict.
+        Set mode='id' for a dict by sensor ID, or mode='name' for a dict by sensor name.   """
+        if self.sensors_by_id == {}:
+            sensors = self.request('GET', f'/api/{self.username}/sensors/')
+            for sensor in sensors:
+                self.sensors_by_id[int(sensor)] = Sensor(self, int(sensor))
+                self.sensors_by_name[sensors[sensor]['name']] = self.sensors_by_id[int(sensor)]
+        if mode == 'id':
+            return self.sensors_by_id
+        if mode == 'name':
+            return self.sensors_by_name
+        if mode == 'list':
+            return self.sensors_by_id.values()
+
+    @property
+    def sensors(self):
+        """ Access sensors as a list """
+        return self.get_sensor_objects()
+
     def get_sensor(self, sensor_id=None, parameter=None):
         """ Gets state by sensor_id and parameter"""
         if isinstance(sensor_id, str):
@@ -637,6 +620,14 @@ class Bridge:
         if parameter is None:
             return data
         return data[parameter]
+
+    def get_sensor_id_by_name(self, name):
+        """ Lookup a sensor id based on string name. Case-sensitive. """
+        sensors = self.get_sensor()
+        for sensor_id in sensors:
+            if name == sensors[sensor_id]['name']:
+                return sensor_id
+        return False
 
     def set_sensor(self, sensor_id, parameter, value=None):
         """ Adjust properties of a sensor
@@ -701,6 +692,15 @@ class Bridge:
 
         logger.debug(result)
         return result
+
+    def delete_sensor(self, sensor_id):
+        try:
+            name = self.sensors_by_id[sensor_id].name
+            del self.sensors_by_name[name]
+            del self.sensors_by_id[sensor_id]
+            return self.request('DELETE', f'/api/{self.username}/sensors/{sensor_id}')
+        except:
+            logger.debug("Unable to delete nonexistent sensor with ID %d", sensor_id)
 
 
 # explicitly define the outward facing API of this module
