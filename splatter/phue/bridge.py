@@ -293,7 +293,7 @@ class Bridge:
                     converted_light = light
                 result.append(self.request('PUT', f'/api/{self.username}/lights/{converted_light}/state', data))
             if 'error' in list(result[-1][0].keys()):
-                logger.warn("ERROR: {0} for light {1}".format(result[-1][0]['error']['description'], light))
+                logger.warning("ERROR: {0} for light {1}".format(result[-1][0]['error']['description'], light))
 
         logger.debug(result)
         return result
@@ -415,7 +415,7 @@ class Bridge:
                 result.append(self.request('PUT', f'/api/{self.username}/groups/{converted_group}/action', data))
 
         if 'error' in list(result[-1][0].keys()):
-            logger.warn("ERROR: {0} for group {1}".format(
+            logger.warning("ERROR: {0} for group {1}".format(
                 result[-1][0]['error']['description'], group))
 
         logger.debug(result)
@@ -471,11 +471,11 @@ class Bridge:
         groups = [x for x in self.groups if x.name == group_name]
         scenes = [x for x in self.scenes if x.name == scene_name]
         if len(groups) != 1:
-            logger.warn("run_scene: More than 1 group found by name {}".format(group_name))
+            logger.warning("run_scene: More than 1 group found by name {}".format(group_name))
             return False
         group = groups[0]
         if len(scenes) == 0:
-            logger.warn("run_scene: No scene found {}".format(scene_name))
+            logger.warning("run_scene: No scene found {}".format(scene_name))
             return False
         if len(scenes) == 1:
             self.activate_scene(group.group_id, scenes[0].scene_id, transition_time)
@@ -487,7 +487,7 @@ class Bridge:
             if group_lights == scene.lights:
                 self.activate_scene(group.group_id, scene.scene_id, transition_time)
                 return True
-        logger.warn("run_scene: did not find a scene: {} "
+        logger.warning("run_scene: did not find a scene: {} "
                     "that shared lights with group {}".format(scene_name, group_name))
         return False
 
@@ -600,7 +600,7 @@ class Bridge:
         logger.debug(str(data))
         result = self.request('PUT', f'/api/{self.username}/sensors/{sensor_id}', data)
         if 'error' in list(result[0].keys()):
-            logger.warn("ERROR: {0} for sensor {1}".format(result[0]['error']['description'], sensor_id))
+            logger.warning("ERROR: {0} for sensor {1}".format(result[0]['error']['description'], sensor_id))
 
         logger.debug(result)
         return result
@@ -643,7 +643,7 @@ class Bridge:
         logger.debug(str(data))
         result = self.request('PUT', f'/api/{self.username}/sensors/{sensor_id}/{structure}', data)
         if 'error' in list(result[0].keys()):
-            logger.warn("ERROR: {0} for sensor {1}".format(result[0]['error']['description'], sensor_id))
+            logger.warning("ERROR: {0} for sensor {1}".format(result[0]['error']['description'], sensor_id))
 
         logger.debug(result)
         return result

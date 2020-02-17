@@ -57,8 +57,7 @@ class Group(Light):
         # transition time...
         if self.transitiontime is not None:
             kwargs['transitiontime'] = self.transitiontime
-            logger.debug("Setting with transitiontime = {0} ds = {1} s".format(
-                self.transitiontime, float(self.transitiontime) / 10))
+            logger.debug("Setting with transitiontime = {0} ds = {1} s".format(self.transitiontime, float(self.transitiontime) / 10))
 
             if (args[0] == 'on' and args[1] is False) or (
                     kwargs.get('on', True) is False):

@@ -26,7 +26,16 @@ class Light:
         self.transitiontime = None  # default
         self._reset_bri_after_on = None
         self._reachable = None
+        self._uniqueid = None
+        self._modelid = None
         self._type = None
+        self._manufacturername = None
+        self._productname = None
+        self._swversion = None
+        self._swupdate = None
+        self._capabilities = None
+        self._config = None
+        self._state = None
 
     def __repr__(self):
         # like default python repr function, but add light name
@@ -88,16 +97,14 @@ class Light:
         if self._on and value is False:
             self._reset_bri_after_on = self.transitiontime is not None
             if self._reset_bri_after_on:
-                logger.warning(
-                    'Turned off light with transitiontime specified, brightness will be reset on power on')
+                logger.warninging('Turned off light with transitiontime specified, brightness will be reset on power on')
 
         self._set('on', value)
 
         # work around bug by resetting brightness after a power on
         if self._on is False and value is True:
             if self._reset_bri_after_on:
-                logger.warning(
-                    'Light was turned off with transitiontime specified, brightness needs to be reset now.')
+                logger.warninging('Light was turned off with transitiontime specified, brightness needs to be reset now.')
                 self.brightness = self._brightness
                 self._reset_bri_after_on = False
 
@@ -172,9 +179,9 @@ class Light:
     @colortemp.setter
     def colortemp(self, value):
         if value < 154:
-            logger.warn('154 mireds is coolest allowed color temp')
+            logger.warning('154 mireds is coolest allowed color temp')
         elif value > 500:
-            logger.warn('500 mireds is warmest allowed color temp')
+            logger.warning('500 mireds is warmest allowed color temp')
         self._colortemp = value
         self._set('ct', self._colortemp)
 
@@ -187,10 +194,10 @@ class Light:
     @colortemp_k.setter
     def colortemp_k(self, value):
         if value > 6500:
-            logger.warn('6500 K is max allowed color temp')
+            logger.warning('6500 K is max allowed color temp')
             value = 6500
         elif value < 2000:
-            logger.warn('2000 K is min allowed color temp')
+            logger.warning('2000 K is min allowed color temp')
             value = 2000
 
         colortemp_mireds = int(round(1e6 / value))
