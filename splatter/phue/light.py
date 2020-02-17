@@ -15,7 +15,7 @@ class Light:
 
         self._name = None
         self._on = None
-        self._brightness = None
+        self._bri = None
         self._colormode = None
         self._hue = None
         self._saturation = None
@@ -105,7 +105,7 @@ class Light:
         if self._on is False and value is True:
             if self._reset_bri_after_on:
                 logger.warninging('Light was turned off with transitiontime specified, brightness needs to be reset now.')
-                self.brightness = self._brightness
+                self.brightness = self._bri
                 self._reset_bri_after_on = False
 
         self._on = value
@@ -122,13 +122,13 @@ class Light:
 
         0 is not off'''
 
-        self._brightness = self._get('bri')
-        return self._brightness
+        self._bri = self._get('bri')
+        return self._bri
 
     @brightness.setter
     def brightness(self, value):
-        self._brightness = value
-        self._set('bri', self._brightness)
+        self._bri = value
+        self._set('bri', self._bri)
 
     @property
     def hue(self):
