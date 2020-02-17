@@ -98,6 +98,20 @@ class Bridge:
         # setup local data containers
         self._name = None
 
+    def __getitem__(self, key):
+        """ Lights are accessibly by indexing the bridge either with
+        an integer index or string name. """
+        if self.lights_by_id == {}:
+            self.get_light_objects()
+
+        try:
+            return self.lights_by_id[key]
+        except:
+            try:
+                return self.lights_by_name[key]
+            except:
+                raise KeyError(f'Not a valid key (integer index starting with 1, or light name): {key}')
+
     @property
     def can_login(self) -> bool:
         """Return true if connected to the bridge."""
@@ -186,6 +200,10 @@ class Bridge:
         # parse the JSON data into a dictionary
         return json.loads(response)
 
+    #
+    # MARK: Bridge
+    #
+
     @property
     def name(self) -> str:
         """Return the name of the bridge."""
@@ -198,6 +216,14 @@ class Bridge:
         self._name = value
         data = {'name': self._name}
         self.request('PUT', f'/api/{self.username}/config', data)
+
+    def get_api(self):
+        """ Returns the full api dictionary """
+        return self.request('GET', f'/api/{self.username}')
+
+    #
+    # MARK: Lights
+    #
 
     def get_light_id_by_name(self, name: str):
         """ Lookup a light id based on string name. Case-sensitive. """
@@ -237,52 +263,10 @@ class Bridge:
             # return lights in sorted id order, dicts have no natural order
             return [self.lights_by_id[id_] for id_ in sorted(self.lights_by_id)]
 
-    def get_sensor_id_by_name(self, name):
-        """ Lookup a sensor id based on string name. Case-sensitive. """
-        sensors = self.get_sensor()
-        for sensor_id in sensors:
-            if name == sensors[sensor_id]['name']:
-                return sensor_id
-        return False
-
-    def get_sensor_objects(self, mode: str = 'list') -> 'Union[list,dict]':
-        """Returns a collection containing the sensors, either by name or id (use 'id' or 'name' as the mode)
-        The returned collection can be either a list (default), or a dict.
-        Set mode='id' for a dict by sensor ID, or mode='name' for a dict by sensor name.   """
-        if self.sensors_by_id == {}:
-            sensors = self.request('GET', f'/api/{self.username}/sensors/')
-            for sensor in sensors:
-                self.sensors_by_id[int(sensor)] = Sensor(self, int(sensor))
-                self.sensors_by_name[sensors[sensor]['name']] = self.sensors_by_id[int(sensor)]
-        if mode == 'id':
-            return self.sensors_by_id
-        if mode == 'name':
-            return self.sensors_by_name
-        if mode == 'list':
-            return self.sensors_by_id.values()
-
-    def __getitem__(self, key):
-        """ Lights are accessibly by indexing the bridge either with
-        an integer index or string name. """
-        if self.lights_by_id == {}:
-            self.get_light_objects()
-
-        try:
-            return self.lights_by_id[key]
-        except:
-            try:
-                return self.lights_by_name[key]
-            except:
-                raise KeyError(f'Not a valid key (integer index starting with 1, or light name): {key}')
-
     @property
     def lights(self):
         """ Access lights as a list """
         return self.get_light_objects()
-
-    def get_api(self):
-        """ Returns the full api dictionary """
-        return self.request('GET', f'/api/{self.username}')
 
     def get_light(self, light_id=None, parameter=None):
         """ Gets state by light_id and parameter"""
@@ -344,7 +328,264 @@ class Bridge:
         logger.debug(result)
         return result
 
-    # Sensors #####
+    #
+    # MARK: Groups
+    #
+
+    @property
+    def groups(self):
+        """ Access groups as a list """
+        return [Group(self, int(groupid)) for groupid in self.get_group().keys()]
+
+    def get_group_id_by_name(self, name):
+        """ Lookup a group id based on string name. Case-sensitive. """
+        groups = self.get_group()
+        for group_id in groups:
+            if name == groups[group_id]['name']:
+                return int(group_id)
+        return False
+
+    def get_group_objects(self, mode: str = 'list') -> 'Union[list,dict]':
+        """Returns a collection containing the groups, either by name or id (use 'id' or 'name' as the mode)
+        The returned collection can be either a list (default), or a dict.
+        Set mode='id' for a dict by sensor ID, or mode='name' for a dict by sensor name.   """
+        if self.groups_by_id == {}:
+            groups = self.request('GET', f'/api/{self.username}/groups/')
+            for group in groups:
+                self.groups_by_id[int(group)] = Group(self, int(group))
+                self.groups_by_name[groups[group]['name']] = self.groups_by_id[int(group)]
+        if mode == 'id':
+            return self.groups_by_id
+        if mode == 'name':
+            return self.groups_by_name
+        if mode == 'list':
+            return self.groups_by_id.values()
+
+    def get_group(self, group_id=None, parameter=None):
+        if isinstance(group_id, str):
+            group_id = self.get_group_id_by_name(group_id)
+        if group_id is False:
+            logger.error('Group name does not exist')
+            return
+        if group_id is None:
+            return self.request('GET', f'/api/{self.username}/groups/')
+        if parameter is None:
+            return self.request('GET', f'/api/{self.username}/groups/{group_id}')
+        if parameter in {'name', 'lights'}:
+            return self.request('GET', f'/api/{self.username}/groups/{group_id}')[parameter]
+        return self.request('GET', f'/api/{self.username}/groups/{group_id}')['action'][parameter]
+
+    def set_group(self, group_id, parameter, value=None, transitiontime=None):
+        """ Change light settings for a group
+
+        group_id : int, id number for group
+        parameter : 'name' or 'lights'
+        value: string, or list of light IDs if you're setting the lights
+
+        """
+
+        if isinstance(parameter, dict):
+            data = parameter
+        elif parameter == 'lights' and (isinstance(value, list) or isinstance(value, int)):
+            if isinstance(value, int):
+                value = [value]
+            data = {parameter: [str(x) for x in value]}
+        else:
+            data = {parameter: value}
+
+        if transitiontime is not None:
+            data['transitiontime'] = int(round(
+                transitiontime))  # must be int for request format
+
+        group_id_array = group_id
+        if isinstance(group_id, (int, str)):
+            group_id_array = [group_id]
+        result = []
+        for group in group_id_array:
+            logger.debug(str(data))
+            if isinstance(group, str):
+                converted_group = self.get_group_id_by_name(group)
+            else:
+                converted_group = group
+            if converted_group is False:
+                logger.error('Group name does not exist')
+                return
+            if parameter in {'name', 'lights'}:
+                result.append(self.request('PUT', f'/api/{self.username}/groups/{converted_group}', data))
+            else:
+                result.append(self.request('PUT', f'/api/{self.username}/groups/{converted_group}/action', data))
+
+        if 'error' in list(result[-1][0].keys()):
+            logger.warn("ERROR: {0} for group {1}".format(
+                result[-1][0]['error']['description'], group))
+
+        logger.debug(result)
+        return result
+
+    def create_group(self, name, lights=None):
+        """ Create a group of lights
+
+        Parameters
+        ------------
+        name : string
+            Name for this group of lights
+        lights : list
+            List of lights to be in the group.
+
+        """
+        data = {'lights': [str(x) for x in lights], 'name': name}
+        return self.request('POST', f'/api/{self.username}/groups/', data)
+
+    def delete_group(self, group_id):
+        return self.request('DELETE', f'/api/{self.username}/groups/{group_id}')
+
+    #
+    # MARK: Scenes
+    #
+
+    def delete_scene(self, scene_id):
+        try:
+            return self.request('DELETE', f'/api/{self.username}/scenes/{scene_id}')
+        except:
+            logger.debug("Unable to delete scene with ID {0}".format(scene_id))
+
+    def delete_sensor(self, sensor_id):
+        try:
+            name = self.sensors_by_id[sensor_id].name
+            del self.sensors_by_name[name]
+            del self.sensors_by_id[sensor_id]
+            return self.request('DELETE', f'/api/{self.username}/sensors/{sensor_id}')
+        except:
+            logger.debug("Unable to delete nonexistent sensor with ID %d", sensor_id)
+
+    @property
+    def scenes(self):
+        return [Scene(k, **v) for k, v in self.get_scene().items()]
+
+    def get_scene(self):
+        return self.request('GET', f'/api/{self.username}/scenes')
+
+    def activate_scene(self, group_id, scene_id, transition_time=4):
+        return self.request('PUT', f'/api/{self.username}/groups/{group_id}/action', {
+            "scene": scene_id,
+            "transitiontime": transition_time
+        })
+
+    def run_scene(self, group_name, scene_name, transition_time=4):
+        """Run a scene by group and scene name.
+
+        As of 1.11 of the Hue API the scenes are accessable in the
+        API. With the gen 2 of the official HUE app everything is
+        organized by room groups.
+
+        This provides a convenience way of activating scenes by group
+        name and scene name. If we find exactly 1 group and 1 scene
+        with the matching names, we run them.
+
+        If we find more than one we run the first scene who has
+        exactly the same lights defined as the group. This is far from
+        perfect, but is convenient for setting lights symbolically (and
+        can be improved later).
+
+        :param transition_time: The duration of the transition from the
+        light’s current state to the new state in a multiple of 100ms
+        :returns True if a scene was run, False otherwise
+
+        """
+        groups = [x for x in self.groups if x.name == group_name]
+        scenes = [x for x in self.scenes if x.name == scene_name]
+        if len(groups) != 1:
+            logger.warn("run_scene: More than 1 group found by name {}".format(group_name))
+            return False
+        group = groups[0]
+        if len(scenes) == 0:
+            logger.warn("run_scene: No scene found {}".format(scene_name))
+            return False
+        if len(scenes) == 1:
+            self.activate_scene(group.group_id, scenes[0].scene_id, transition_time)
+            return True
+        # otherwise, lets figure out if one of the named scenes uses
+        # all the lights of the group
+        group_lights = sorted([x.light_id for x in group.lights])
+        for scene in scenes:
+            if group_lights == scene.lights:
+                self.activate_scene(group.group_id, scene.scene_id, transition_time)
+                return True
+        logger.warn("run_scene: did not find a scene: {} "
+                    "that shared lights with group {}".format(scene_name, group_name))
+        return False
+
+    #
+    # MARK: Schedules
+    #
+
+    def get_schedule(self, schedule_id=None, parameter=None):
+        if schedule_id is None:
+            return self.request('GET', f'/api/{self.username}/schedules')
+        if parameter is None:
+            return self.request('GET', f'/api/{self.username}/schedules/{schedule_id}')
+
+    def create_schedule(self, name, time, light_id, data, description=' '):
+        return self.request('POST', f'/api/{self.username}/schedules', {
+            'name': name,
+            'localtime': time,
+            'description': description,
+            'command': {
+                'method': 'PUT',
+                'address': f'/api/{self.username}/lights/{light_id}/state',
+                'body': data
+            }
+        })
+
+    def set_schedule_attributes(self, schedule_id, attributes):
+        """
+        :param schedule_id: The ID of the schedule
+        :param attributes: Dictionary with attributes and their new values
+        """
+        return self.request('PUT', f'/api/{self.username}/schedules/{schedule_id}', data=attributes)
+
+    def create_group_schedule(self, name, time, group_id, data, description=' '):
+        return self.request('POST', f'/api/{self.username}/schedules', {
+            'name': name,
+            'localtime': time,
+            'description': description,
+            'command': {
+                'method': 'PUT',
+                'address': f'/api/{self.username}/groups/{group_id}/action',
+                'body': data
+            }
+        })
+
+    def delete_schedule(self, schedule_id):
+        return self.request('DELETE', f'/api/{self.username}/schedules/{schedule_id}')
+
+    #
+    # MARK: Sensors
+    #
+
+    def get_sensor_id_by_name(self, name):
+        """ Lookup a sensor id based on string name. Case-sensitive. """
+        sensors = self.get_sensor()
+        for sensor_id in sensors:
+            if name == sensors[sensor_id]['name']:
+                return sensor_id
+        return False
+
+    def get_sensor_objects(self, mode: str = 'list') -> 'Union[list,dict]':
+        """Returns a collection containing the sensors, either by name or id (use 'id' or 'name' as the mode)
+        The returned collection can be either a list (default), or a dict.
+        Set mode='id' for a dict by sensor ID, or mode='name' for a dict by sensor name.   """
+        if self.sensors_by_id == {}:
+            sensors = self.request('GET', f'/api/{self.username}/sensors/')
+            for sensor in sensors:
+                self.sensors_by_id[int(sensor)] = Sensor(self, int(sensor))
+                self.sensors_by_name[sensors[sensor]['name']] = self.sensors_by_id[int(sensor)]
+        if mode == 'id':
+            return self.sensors_by_id
+        if mode == 'name':
+            return self.sensors_by_name
+        if mode == 'list':
+            return self.sensors_by_id.values()
 
     @property
     def sensors(self):
@@ -460,228 +701,6 @@ class Bridge:
 
         logger.debug(result)
         return result
-
-    def delete_scene(self, scene_id):
-        try:
-            return self.request('DELETE', f'/api/{self.username}/scenes/{scene_id}')
-        except:
-            logger.debug("Unable to delete scene with ID {0}".format(scene_id))
-
-    def delete_sensor(self, sensor_id):
-        try:
-            name = self.sensors_by_id[sensor_id].name
-            del self.sensors_by_name[name]
-            del self.sensors_by_id[sensor_id]
-            return self.request('DELETE', f'/api/{self.username}/sensors/{sensor_id}')
-        except:
-            logger.debug("Unable to delete nonexistent sensor with ID %d", sensor_id)
-
-    # Groups of lights #####
-    @property
-    def groups(self):
-        """ Access groups as a list """
-        return [Group(self, int(groupid)) for groupid in self.get_group().keys()]
-
-    def get_group_id_by_name(self, name):
-        """ Lookup a group id based on string name. Case-sensitive. """
-        groups = self.get_group()
-        for group_id in groups:
-            if name == groups[group_id]['name']:
-                return int(group_id)
-        return False
-
-    def get_group_objects(self, mode: str = 'list') -> 'Union[list,dict]':
-        """Returns a collection containing the groups, either by name or id (use 'id' or 'name' as the mode)
-        The returned collection can be either a list (default), or a dict.
-        Set mode='id' for a dict by sensor ID, or mode='name' for a dict by sensor name.   """
-        if self.groups_by_id == {}:
-            groups = self.request('GET', f'/api/{self.username}/groups/')
-            for group in groups:
-                self.groups_by_id[int(group)] = Group(self, int(group))
-                self.groups_by_name[groups[group]['name']] = self.groups_by_id[int(group)]
-        if mode == 'id':
-            return self.groups_by_id
-        if mode == 'name':
-            return self.groups_by_name
-        if mode == 'list':
-            return self.groups_by_id.values()
-
-    def get_group(self, group_id=None, parameter=None):
-        if isinstance(group_id, str):
-            group_id = self.get_group_id_by_name(group_id)
-        if group_id is False:
-            logger.error('Group name does not exist')
-            return
-        if group_id is None:
-            return self.request('GET', f'/api/{self.username}/groups/')
-        if parameter is None:
-            return self.request('GET', f'/api/{self.username}/groups/{group_id}')
-        if parameter in {'name', 'lights'}:
-            return self.request('GET', f'/api/{self.username}/groups/{group_id}')[parameter]
-        return self.request('GET', f'/api/{self.username}/groups/{group_id}')['action'][parameter]
-
-    def set_group(self, group_id, parameter, value=None, transitiontime=None):
-        """ Change light settings for a group
-
-        group_id : int, id number for group
-        parameter : 'name' or 'lights'
-        value: string, or list of light IDs if you're setting the lights
-
-        """
-
-        if isinstance(parameter, dict):
-            data = parameter
-        elif parameter == 'lights' and (isinstance(value, list) or isinstance(value, int)):
-            if isinstance(value, int):
-                value = [value]
-            data = {parameter: [str(x) for x in value]}
-        else:
-            data = {parameter: value}
-
-        if transitiontime is not None:
-            data['transitiontime'] = int(round(
-                transitiontime))  # must be int for request format
-
-        group_id_array = group_id
-        if isinstance(group_id, (int, str)):
-            group_id_array = [group_id]
-        result = []
-        for group in group_id_array:
-            logger.debug(str(data))
-            if isinstance(group, str):
-                converted_group = self.get_group_id_by_name(group)
-            else:
-                converted_group = group
-            if converted_group is False:
-                logger.error('Group name does not exist')
-                return
-            if parameter in {'name', 'lights'}:
-                result.append(self.request('PUT', f'/api/{self.username}/groups/{converted_group}', data))
-            else:
-                result.append(self.request('PUT', f'/api/{self.username}/groups/{converted_group}/action', data))
-
-        if 'error' in list(result[-1][0].keys()):
-            logger.warn("ERROR: {0} for group {1}".format(
-                result[-1][0]['error']['description'], group))
-
-        logger.debug(result)
-        return result
-
-    def create_group(self, name, lights=None):
-        """ Create a group of lights
-
-        Parameters
-        ------------
-        name : string
-            Name for this group of lights
-        lights : list
-            List of lights to be in the group.
-
-        """
-        data = {'lights': [str(x) for x in lights], 'name': name}
-        return self.request('POST', f'/api/{self.username}/groups/', data)
-
-    def delete_group(self, group_id):
-        return self.request('DELETE', f'/api/{self.username}/groups/{group_id}')
-
-    # Scenes #####
-    @property
-    def scenes(self):
-        return [Scene(k, **v) for k, v in self.get_scene().items()]
-
-    def get_scene(self):
-        return self.request('GET', f'/api/{self.username}/scenes')
-
-    def activate_scene(self, group_id, scene_id, transition_time=4):
-        return self.request('PUT', f'/api/{self.username}/groups/{group_id}/action', {
-            "scene": scene_id,
-            "transitiontime": transition_time
-        })
-
-    def run_scene(self, group_name, scene_name, transition_time=4):
-        """Run a scene by group and scene name.
-
-        As of 1.11 of the Hue API the scenes are accessable in the
-        API. With the gen 2 of the official HUE app everything is
-        organized by room groups.
-
-        This provides a convenience way of activating scenes by group
-        name and scene name. If we find exactly 1 group and 1 scene
-        with the matching names, we run them.
-
-        If we find more than one we run the first scene who has
-        exactly the same lights defined as the group. This is far from
-        perfect, but is convenient for setting lights symbolically (and
-        can be improved later).
-
-        :param transition_time: The duration of the transition from the
-        light’s current state to the new state in a multiple of 100ms
-        :returns True if a scene was run, False otherwise
-
-        """
-        groups = [x for x in self.groups if x.name == group_name]
-        scenes = [x for x in self.scenes if x.name == scene_name]
-        if len(groups) != 1:
-            logger.warn("run_scene: More than 1 group found by name {}".format(group_name))
-            return False
-        group = groups[0]
-        if len(scenes) == 0:
-            logger.warn("run_scene: No scene found {}".format(scene_name))
-            return False
-        if len(scenes) == 1:
-            self.activate_scene(group.group_id, scenes[0].scene_id, transition_time)
-            return True
-        # otherwise, lets figure out if one of the named scenes uses
-        # all the lights of the group
-        group_lights = sorted([x.light_id for x in group.lights])
-        for scene in scenes:
-            if group_lights == scene.lights:
-                self.activate_scene(group.group_id, scene.scene_id, transition_time)
-                return True
-        logger.warn("run_scene: did not find a scene: {} "
-                    "that shared lights with group {}".format(scene_name, group_name))
-        return False
-
-    # Schedules #####
-    def get_schedule(self, schedule_id=None, parameter=None):
-        if schedule_id is None:
-            return self.request('GET', f'/api/{self.username}/schedules')
-        if parameter is None:
-            return self.request('GET', f'/api/{self.username}/schedules/{schedule_id}')
-
-    def create_schedule(self, name, time, light_id, data, description=' '):
-        return self.request('POST', f'/api/{self.username}/schedules', {
-            'name': name,
-            'localtime': time,
-            'description': description,
-            'command': {
-                'method': 'PUT',
-                'address': f'/api/{self.username}/lights/{light_id}/state',
-                'body': data
-            }
-        })
-
-    def set_schedule_attributes(self, schedule_id, attributes):
-        """
-        :param schedule_id: The ID of the schedule
-        :param attributes: Dictionary with attributes and their new values
-        """
-        return self.request('PUT', f'/api/{self.username}/schedules/{schedule_id}', data=attributes)
-
-    def create_group_schedule(self, name, time, group_id, data, description=' '):
-        return self.request('POST', f'/api/{self.username}/schedules', {
-            'name': name,
-            'localtime': time,
-            'description': description,
-            'command': {
-                'method': 'PUT',
-                'address': f'/api/{self.username}/groups/{group_id}/action',
-                'body': data
-            }
-        })
-
-    def delete_schedule(self, schedule_id):
-        return self.request('DELETE', f'/api/{self.username}/schedules/{schedule_id}')
 
 
 # explicitly define the outward facing API of this module
