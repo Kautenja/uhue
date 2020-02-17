@@ -316,3 +316,7 @@ class Light:
     def color_hex(self):
         """Return the color in hex format."""
         return '%02x%02x%02x' % self.color
+
+
+# explicitly define the outward facing API of this module
+__all__ = [Light.__name__]

@@ -46,24 +46,7 @@ def unwrap_config_file_path(config_file_path: str = None):
 
 
 class Bridge:
-    """
-    An interface to the Hue ZigBee bridge.
-
-    You can obtain Light objects by calling the get_light_objects method:
-
-        >>> b = Bridge(ip='192.168.1.100')
-        >>> b.get_light_objects()
-        [<phue.Light at 0x10473d750>,
-         <phue.Light at 0x1046ce110>]
-
-    Or more succinctly just by accessing this Bridge object as a list or dict:
-
-        >>> b[1]
-        <phue.Light at 0x10473d750>
-        >>> b['Kitchen']
-        <phue.Light at 0x10473d750>
-
-    """
+    """An interface to the Philips Hue ZigBee bridge."""
 
     def __init__(self,
         ip_address: str = None,

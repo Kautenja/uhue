@@ -33,9 +33,8 @@ class Group(Light):
     """
 
     def __init__(self, bridge, group_id):
-        Light.__init__(self, bridge, None)
+        super().__init__(bridge, None)
         del self.light_id  # not relevant for a group
-
         try:
             self.group_id = int(group_id)
         except:
@@ -92,3 +91,7 @@ class Group(Light):
         logger.debug("Setting lights in group {0} to {1}".format(
             self.group_id, str(value)))
         self._set('lights', value)
+
+
+# explicitly define the outward facing API of this module
+__all__ = [Group.__name__]

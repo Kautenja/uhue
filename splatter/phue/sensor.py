@@ -40,6 +40,7 @@ class Sensor:
 
         self._name = None
         self._model = None
+        self._modelid = None
         self._swversion = None
         self._type = None
         self._uniqueid = None
@@ -50,11 +51,7 @@ class Sensor:
 
     def __repr__(self):
         # like default python repr function, but add sensor name
-        return '<{0}.{1} object "{2}" at {3}>'.format(
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.name,
-            hex(id(self)))
+        return f'<{self.__class__.__module__}.{self.__class__.__name__} object "{self.name}" at {hex(id(self))}>'
 
     # Wrapper functions for get/set through the bridge
     def _get(self, *args, **kwargs):
@@ -73,10 +70,7 @@ class Sensor:
         old_name = self.name
         self._name = value
         self._set('name', self._name)
-
-        logger.debug("Renaming sensor from '{0}' to '{1}'".format(
-            old_name, value))
-
+        logger.debug("Renaming sensor from '%s' to '%s'", old_name, value)
         self.bridge.sensors_by_name[self.name] = self
         del self.bridge.sensors_by_name[old_name]
 
@@ -141,3 +135,7 @@ class Sensor:
         ''' True if this resource should be automatically removed when the last reference to it disappears [bool]'''
         self._recycle = self._get('manufacturername')
         return self._manufacturername
+
+
+# explicitly define the outward facing API of this module
+__all__ = [Sensor.__name__]

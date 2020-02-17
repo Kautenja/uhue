@@ -30,9 +30,8 @@ class Scene:
 
     def __repr__(self):
         # like default python repr function, but add scene name
-        return '<{0}.{1} id="{2}" name="{3}" lights={4}>'.format(
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.scene_id,
-            self.name,
-            self.lights)
+        return f'<{self.__class__.__module__}.{self.__class__.__name__} id="{self.scene_id}" name="{self.name}" lights={self.lights}>'
+
+
+# explicitly define the outward facing API of this module
+__all__ = [Scene.__name__]
