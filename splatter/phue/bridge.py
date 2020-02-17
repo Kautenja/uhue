@@ -293,7 +293,7 @@ class Bridge:
                     converted_light = light
                 result.append(self.request('PUT', f'/api/{self.username}/lights/{converted_light}/state', data))
             if 'error' in list(result[-1][0].keys()):
-                logger.warning("ERROR: {0} for light {1}".format(result[-1][0]['error']['description'], light))
+                logger.warning("ERROR: %s for light %d", result[-1][0]['error']['description'], light)
 
         logger.debug(result)
         return result
@@ -415,8 +415,7 @@ class Bridge:
                 result.append(self.request('PUT', f'/api/{self.username}/groups/{converted_group}/action', data))
 
         if 'error' in list(result[-1][0].keys()):
-            logger.warning("ERROR: {0} for group {1}".format(
-                result[-1][0]['error']['description'], group))
+            logger.warning("ERROR: %s for group %d", result[-1][0]['error']['description'], group)
 
         logger.debug(result)
         return result
@@ -439,7 +438,7 @@ class Bridge:
         try:
             return self.request('DELETE', f'/api/{self.username}/scenes/{scene_id}')
         except:
-            logger.debug("Unable to delete scene with ID {0}".format(scene_id))
+            logger.debug("Unable to delete scene with ID %d", scene_id)
 
     def activate_scene(self, group_id, scene_id, transition_time=4):
         return self.request('PUT', f'/api/{self.username}/groups/{group_id}/action', {
@@ -471,11 +470,11 @@ class Bridge:
         groups = [x for x in self.groups if x.name == group_name]
         scenes = [x for x in self.scenes if x.name == scene_name]
         if len(groups) != 1:
-            logger.warning("run_scene: More than 1 group found by name {}".format(group_name))
+            logger.warning("run_scene: More than 1 group found by name %s", group_name)
             return False
         group = groups[0]
         if len(scenes) == 0:
-            logger.warning("run_scene: No scene found {}".format(scene_name))
+            logger.warning("run_scene: No scene found %s", scene_name)
             return False
         if len(scenes) == 1:
             self.activate_scene(group.group_id, scenes[0].scene_id, transition_time)
@@ -487,15 +486,14 @@ class Bridge:
             if group_lights == scene.lights:
                 self.activate_scene(group.group_id, scene.scene_id, transition_time)
                 return True
-        logger.warning("run_scene: did not find a scene: {} "
-                    "that shared lights with group {}".format(scene_name, group_name))
+        logger.warning("run_scene: did not find a scene: %s that shared lights with group %s", scene_name, group_name)
         return False
 
     #
     # MARK: Sensors
     #
 
-    def create_sensor(self, name, modelid, swversion, sensor_type, uniqueid, manufacturername, state={}, config={}, recycle=False):
+    def create_sensor(self, name, modelid, swversion, sensor_type, uniqueid, manufacturername, state=None, config=None, recycle=False):
         """ Create a new sensor in the bridge. Returns (ID,None) of the new sensor or (None,message) if creation failed. """
         data = {
             "name": name,
@@ -506,23 +504,22 @@ class Bridge:
             "manufacturername": manufacturername,
             "recycle": recycle
         }
-        if (isinstance(state, dict) and state != {}):
+        if (isinstance(state, dict) and state):  # state is non-empty dict
             data["state"] = state
-
-        if (isinstance(config, dict) and config != {}):
+        if (isinstance(config, dict) and config):  # config is non-empty dict
             data["config"] = config
 
         result = self.request('POST', f'/api/{self.username}/sensors/', data)
 
         if ("success" in result[0].keys()):
             new_id = result[0]["success"]["id"]
-            logger.debug(f"Created sensor with ID {new_id}")
+            logger.debug("Created sensor with ID %d", new_id)
             new_sensor = Sensor(self, int(new_id))
             self.sensors_by_id[new_id] = new_sensor
             self.sensors_by_name[name] = new_sensor
             return new_id, None
         else:
-            logger.debug(f"Failed to create sensor: {repr(result[0])}")
+            logger.debug("Failed to create sensor: %s", repr(result[0]))
             return None, result[0]
 
     def get_sensor_objects(self, mode: str = 'list') -> 'Union[list,dict]':
@@ -569,7 +566,7 @@ class Bridge:
         data = self.request('GET', f'/api/{self.username}/sensors/{sensor_id}')
 
         if isinstance(data, list):
-            logger.debug("Unable to read sensor with ID {0}: {1}".format(sensor_id, repr(data)))
+            logger.debug("Unable to read sensor with ID %d: %s", sensor_id, repr(data))
             return None
 
         if parameter is None:
@@ -600,7 +597,7 @@ class Bridge:
         logger.debug(str(data))
         result = self.request('PUT', f'/api/{self.username}/sensors/{sensor_id}', data)
         if 'error' in list(result[0].keys()):
-            logger.warning("ERROR: {0} for sensor {1}".format(result[0]['error']['description'], sensor_id))
+            logger.warning("ERROR: %s for sensor %d", result[0]['error']['description'], sensor_id)
 
         logger.debug(result)
         return result
@@ -643,7 +640,7 @@ class Bridge:
         logger.debug(str(data))
         result = self.request('PUT', f'/api/{self.username}/sensors/{sensor_id}/{structure}', data)
         if 'error' in list(result[0].keys()):
-            logger.warning("ERROR: {0} for sensor {1}".format(result[0]['error']['description'], sensor_id))
+            logger.warning("ERROR: %s for sensor %d", result[0]['error']['description'], sensor_id)
 
         logger.debug(result)
         return result
