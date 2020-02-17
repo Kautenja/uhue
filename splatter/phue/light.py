@@ -39,11 +39,7 @@ class Light:
 
     def __repr__(self):
         # like default python repr function, but add light name
-        return '<{0}.{1} object "{2}" at {3}>'.format(
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.name,
-            hex(id(self)))
+        return f'<{self.__class__.__module__}.{self.__class__.__name__} object "{self.name}" at {hex(id(self))}>'
 
     # Wrapper functions for get/set through the bridge, adding support for
     # remembering the transitiontime parameter if the user has set it
@@ -53,8 +49,7 @@ class Light:
     def _set(self, *args, **kwargs):
         if self.transitiontime is not None:
             kwargs['transitiontime'] = self.transitiontime
-            logger.debug("Setting with transitiontime = {0} ds = {1} s".format(
-                self.transitiontime, float(self.transitiontime) / 10))
+            logger.debug("Setting with transitiontime = %f ds = %f s", self.transitiontime, float(self.transitiontime) / 10)
 
             if (args[0] == 'on' and args[1] is False) or (
                     kwargs.get('on', True) is False):
@@ -72,8 +67,7 @@ class Light:
         self._name = value
         self._set('name', self._name)
 
-        logger.debug("Renaming light from '{0}' to '{1}'".format(
-            old_name, value))
+        logger.debug("Renaming light from '%s' to '%s'", old_name, value)
 
         self.bridge.lights_by_name[self.name] = self
         del self.bridge.lights_by_name[old_name]
@@ -201,7 +195,7 @@ class Light:
             value = 2000
 
         colortemp_mireds = int(round(1e6 / value))
-        logger.debug("{0:d} K is {1} mireds".format(value, colortemp_mireds))
+        logger.debug("%d{0:} K is %d mireds", value, colortemp_mireds)
         self.colortemp = colortemp_mireds
 
     @property
