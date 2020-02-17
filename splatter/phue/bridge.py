@@ -98,20 +98,6 @@ class Bridge:
         # setup local data containers
         self._name = None
 
-    def __getitem__(self, key):
-        """ Lights are accessibly by indexing the bridge either with
-        an integer index or string name. """
-        if self.lights_by_id == {}:
-            self.get_light_objects()
-
-        try:
-            return self.lights_by_id[key]
-        except:
-            try:
-                return self.lights_by_name[key]
-            except:
-                raise KeyError(f'Not a valid key (integer index starting with 1, or light name): {key}')
-
     #
     # MARK: Bridge
     #
