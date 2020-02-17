@@ -682,4 +682,4 @@ class Bridge:
 
 
 # explicitly define the outward facing API of this module
-__name__ = [Bridge.__name__]
+__all__ = [Bridge.__name__]
