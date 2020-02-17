@@ -679,3 +679,7 @@ class Bridge:
 
     def delete_schedule(self, schedule_id):
         return self.request('DELETE', f'/api/{self.username}/schedules/{schedule_id}')
+
+
+# explicitly define the outward facing API of this module
+__name__ = [Bridge.__name__]
