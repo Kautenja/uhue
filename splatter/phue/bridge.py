@@ -492,50 +492,6 @@ class Bridge:
         return False
 
     #
-    # MARK: Schedules
-    #
-
-    def create_schedule(self, name, time, light_id, data, description=' '):
-        return self.request('POST', f'/api/{self.username}/schedules', {
-            'name': name,
-            'localtime': time,
-            'description': description,
-            'command': {
-                'method': 'PUT',
-                'address': f'/api/{self.username}/lights/{light_id}/state',
-                'body': data
-            }
-        })
-
-    def create_group_schedule(self, name, time, group_id, data, description=' '):
-        return self.request('POST', f'/api/{self.username}/schedules', {
-            'name': name,
-            'localtime': time,
-            'description': description,
-            'command': {
-                'method': 'PUT',
-                'address': f'/api/{self.username}/groups/{group_id}/action',
-                'body': data
-            }
-        })
-
-    def get_schedule(self, schedule_id=None, parameter=None):
-        if schedule_id is None:
-            return self.request('GET', f'/api/{self.username}/schedules')
-        if parameter is None:
-            return self.request('GET', f'/api/{self.username}/schedules/{schedule_id}')
-
-    def set_schedule_attributes(self, schedule_id, attributes):
-        """
-        :param schedule_id: The ID of the schedule
-        :param attributes: Dictionary with attributes and their new values
-        """
-        return self.request('PUT', f'/api/{self.username}/schedules/{schedule_id}', data=attributes)
-
-    def delete_schedule(self, schedule_id):
-        return self.request('DELETE', f'/api/{self.username}/schedules/{schedule_id}')
-
-    #
     # MARK: Sensors
     #
 
@@ -700,6 +656,50 @@ class Bridge:
             return self.request('DELETE', f'/api/{self.username}/sensors/{sensor_id}')
         except:
             logger.debug("Unable to delete nonexistent sensor with ID %d", sensor_id)
+
+    #
+    # MARK: Schedules
+    #
+
+    def create_schedule(self, name, time, light_id, data, description=' '):
+        return self.request('POST', f'/api/{self.username}/schedules', {
+            'name': name,
+            'localtime': time,
+            'description': description,
+            'command': {
+                'method': 'PUT',
+                'address': f'/api/{self.username}/lights/{light_id}/state',
+                'body': data
+            }
+        })
+
+    def create_group_schedule(self, name, time, group_id, data, description=' '):
+        return self.request('POST', f'/api/{self.username}/schedules', {
+            'name': name,
+            'localtime': time,
+            'description': description,
+            'command': {
+                'method': 'PUT',
+                'address': f'/api/{self.username}/groups/{group_id}/action',
+                'body': data
+            }
+        })
+
+    def get_schedule(self, schedule_id=None, parameter=None):
+        if schedule_id is None:
+            return self.request('GET', f'/api/{self.username}/schedules')
+        if parameter is None:
+            return self.request('GET', f'/api/{self.username}/schedules/{schedule_id}')
+
+    def set_schedule_attributes(self, schedule_id, attributes):
+        """
+        :param schedule_id: The ID of the schedule
+        :param attributes: Dictionary with attributes and their new values
+        """
+        return self.request('PUT', f'/api/{self.username}/schedules/{schedule_id}', data=attributes)
+
+    def delete_schedule(self, schedule_id):
+        return self.request('DELETE', f'/api/{self.username}/schedules/{schedule_id}')
 
 
 # explicitly define the outward facing API of this module
