@@ -86,12 +86,13 @@ class Bridge:
         self.username = username
         self.config_file_path = unwrap_config_file_path(config_file_path)
 
-        self.lights_by_id = {}
-        self.lights_by_name = {}
-        self.sensors_by_id = {}
-        self.sensors_by_name = {}
-        self.groups_by_id = {}
-        self.groups_by_name = {}
+        self.lights_by_id = dict()
+        self.lights_by_name = dict()
+        self.sensors_by_id = dict()
+        self.sensors_by_name = dict()
+        self.groups_by_id = dict()
+        self.groups_by_name = dict()
+
         self._name = None
 
     @property
@@ -183,19 +184,19 @@ class Bridge:
         return json.loads(response)
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the name of the bridge."""
         self._name = self.request('GET', '/api/' + self.username + '/config')['name']
         return self._name
 
     @name.setter
-    def name(self, value):
+    def name(self, value: str) -> None:
         """Set the name of the bridge to a new value."""
         self._name = value
         data = {'name': self._name}
         self.request('PUT', '/api/' + self.username + '/config', data)
 
-    def get_light_id_by_name(self, name):
+    def get_light_id_by_name(self, name: str):
         """ Lookup a light id based on string name. Case-sensitive. """
         lights = self.get_light()
         for light_id in lights:
@@ -203,23 +204,35 @@ class Bridge:
                 return light_id
         return False
 
-    def get_light_objects(self, mode='list'):
-        """Returns a collection containing the lights, either by name or id (use 'id' or 'name' as the mode)
-        The returned collection can be either a list (default), or a dict.
-        Set mode='id' for a dict by light ID, or mode='name' for a dict by light name.   """
-        if self.lights_by_id == {}:
-            lights = self.request('GET', '/api/' + self.username + '/lights/')
-            for light in lights:
+    def get_light_objects(self, mode: str = 'list') -> 'Union[list,dict]':
+        """
+        Return a collection containing the lights, either by name or id.
+
+        Args:
+            mode: the mode to use for returning the light data structure.
+                  Use 'id', 'name', or 'list' as the mode
+
+        Returns:
+            the collections of lights as either:
+            - a list, if in 'list' mode
+            - a dict keyed by light ID (int) id in 'id' mode
+            - a dict keyed by light name (str) id in 'name' mode
+
+        """
+        if not self.lights_by_id:  # the lights have not been loaded
+            # load the lights from the API
+            lights = self.request('GET', f'/api/{self.username}/lights/')
+            for light in lights:  # iterate over the lights
                 self.lights_by_id[int(light)] = Light(self, int(light))
-                self.lights_by_name[lights[light][
-                    'name']] = self.lights_by_id[int(light)]
+                self.lights_by_name[lights[light]['name']] = self.lights_by_id[int(light)]
+        # return the lights based on data structure
         if mode == 'id':
             return self.lights_by_id
         if mode == 'name':
             return self.lights_by_name
         if mode == 'list':
-            # return ligts in sorted id order, dicts have no natural order
-            return [self.lights_by_id[id] for id in sorted(self.lights_by_id)]
+            # return lights in sorted id order, dicts have no natural order
+            return [self.lights_by_id[id_] for id_ in sorted(self.lights_by_id)]
 
     def get_sensor_id_by_name(self, name):
         """ Lookup a sensor id based on string name. Case-sensitive. """
@@ -237,8 +250,7 @@ class Bridge:
             sensors = self.request('GET', '/api/' + self.username + '/sensors/')
             for sensor in sensors:
                 self.sensors_by_id[int(sensor)] = Sensor(self, int(sensor))
-                self.sensors_by_name[sensors[sensor][
-                    'name']] = self.sensors_by_id[int(sensor)]
+                self.sensors_by_name[sensors[sensor]['name']] = self.sensors_by_id[int(sensor)]
         if mode == 'id':
             return self.sensors_by_id
         if mode == 'name':
