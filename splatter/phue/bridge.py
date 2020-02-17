@@ -112,6 +112,10 @@ class Bridge:
             except:
                 raise KeyError(f'Not a valid key (integer index starting with 1, or light name): {key}')
 
+    #
+    # MARK: Bridge
+    #
+
     @property
     def can_login(self) -> bool:
         """Return true if connected to the bridge."""
@@ -200,10 +204,6 @@ class Bridge:
         # parse the JSON data into a dictionary
         return json.loads(response)
 
-    #
-    # MARK: Bridge
-    #
-
     @property
     def name(self) -> str:
         """Return the name of the bridge."""
@@ -217,7 +217,8 @@ class Bridge:
         data = {'name': self._name}
         self.request('PUT', f'/api/{self.username}/config', data)
 
-    def get_api(self):
+    @property
+    def api(self):
         """ Returns the full api dictionary """
         return self.request('GET', f'/api/{self.username}')
 
@@ -243,7 +244,7 @@ class Bridge:
         if not self.lights_by_id:  # the lights have not been loaded
             # load the lights from the API
             lights = self.request('GET', f'/api/{self.username}/lights/')
-            for light in lights:  # iterate over the lights
+            for light in lights:  # create the light objects and pointers
                 self.lights_by_id[int(light)] = Light(self, int(light))
                 self.lights_by_name[lights[light]['name']] = self.lights_by_id[int(light)]
         # return the lights based on data structure
@@ -346,26 +347,41 @@ class Bridge:
         data = {'lights': [str(x) for x in lights], 'name': name}
         return self.request('POST', f'/api/{self.username}/groups/', data)
 
+    # TODO: duplicate code with get_light_objects?
     def get_group_objects(self, mode: str = 'list') -> 'Union[list,dict]':
-        """Returns a collection containing the groups, either by name or id (use 'id' or 'name' as the mode)
-        The returned collection can be either a list (default), or a dict.
-        Set mode='id' for a dict by sensor ID, or mode='name' for a dict by sensor name.   """
-        if self.groups_by_id == {}:
+        """
+        Return a collection containing the groups, either by name or id.
+
+        Args:
+            mode: the mode to use for returning the groups data structure.
+                  Use 'id', 'name', or 'list' as the mode
+
+        Returns:
+            the collections of lights as either:
+            - a list, if in 'list' mode
+            - a dict keyed by groups ID (int) id in 'id' mode
+            - a dict keyed by groups name (str) id in 'name' mode
+
+        """
+        if not self.groups_by_id:  # the groups have not been loaded
+            # load the groups from the API
             groups = self.request('GET', f'/api/{self.username}/groups/')
-            for group in groups:
+            for group in groups:  # create the group objects and pointers
                 self.groups_by_id[int(group)] = Group(self, int(group))
                 self.groups_by_name[groups[group]['name']] = self.groups_by_id[int(group)]
+        # return the groups based on data structure
         if mode == 'id':
             return self.groups_by_id
         if mode == 'name':
             return self.groups_by_name
         if mode == 'list':
-            return self.groups_by_id.values()
+            # return groups in sorted id order, dicts have no natural order
+            return [self.groups_by_id[id_] for id_ in sorted(self.groups_by_id)]
 
     @property
     def groups(self):
         """ Access groups as a list """
-        return [Group(self, int(groupid)) for groupid in self.get_group().keys()]
+        return self.get_group_objects()
 
     def get_group(self, group_id=None, parameter=None):
         if isinstance(group_id, str):
@@ -585,20 +601,34 @@ class Bridge:
             return None, result[0]
 
     def get_sensor_objects(self, mode: str = 'list') -> 'Union[list,dict]':
-        """Returns a collection containing the sensors, either by name or id (use 'id' or 'name' as the mode)
-        The returned collection can be either a list (default), or a dict.
-        Set mode='id' for a dict by sensor ID, or mode='name' for a dict by sensor name.   """
-        if self.sensors_by_id == {}:
+        """
+        Return a collection containing the sensors, either by name or id.
+
+        Args:
+            mode: the mode to use for returning the sensor data structure.
+                  Use 'id', 'name', or 'list' as the mode
+
+        Returns:
+            the collections of sensors as either:
+            - a list, if in 'list' mode
+            - a dict keyed by sensor ID (int) id in 'id' mode
+            - a dict keyed by sensor name (str) id in 'name' mode
+
+        """
+        if not self.sensors_by_id:  # the sensors have not been loaded
+            # load the sensors from the API
             sensors = self.request('GET', f'/api/{self.username}/sensors/')
-            for sensor in sensors:
+            for sensor in sensors:  # create the sensor objects and pointers
                 self.sensors_by_id[int(sensor)] = Sensor(self, int(sensor))
                 self.sensors_by_name[sensors[sensor]['name']] = self.sensors_by_id[int(sensor)]
+        # return the sensors based on data structure
         if mode == 'id':
             return self.sensors_by_id
         if mode == 'name':
             return self.sensors_by_name
         if mode == 'list':
-            return self.sensors_by_id.values()
+            # return sensors in sorted id order, dicts have no natural order
+            return [self.sensors_by_id[id_] for id_ in sorted(self.sensors_by_id)]
 
     @property
     def sensors(self):
