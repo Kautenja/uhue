@@ -85,14 +85,17 @@ class Bridge:
         self.ip_address = ip_address
         self.username = username
         self.config_file_path = unwrap_config_file_path(config_file_path)
-
+        # setup structure for light objects
         self.lights_by_id = dict()
         self.lights_by_name = dict()
+        # setup structures for sensor objects
         self.sensors_by_id = dict()
         self.sensors_by_name = dict()
+        # setup structures for group objects
         self.groups_by_id = dict()
         self.groups_by_name = dict()
 
+        # setup local data containers
         self._name = None
 
     @property
@@ -144,7 +147,7 @@ class Bridge:
 
     def request(self,
         mode: str = 'GET',
-        address: str = None,
+        endpoint: str = None,
         data: dict = None,
         timeout: int = 10
     ) -> dict:
@@ -153,8 +156,8 @@ class Bridge:
 
         Args:
             mode: the HTTP mode to use (e.g., GET)
-            address: the address to send the message to
-            data: the data to send in the message
+            endpoint: the address to send the message to
+            data: the JSON data to send in the message
             timeout: the timeout for the request
 
         Returns:
@@ -166,12 +169,12 @@ class Bridge:
         # make the request using the given mode
         try:
             if mode in {'GET', 'DELETE'}:
-                connection.request(mode, address)
+                connection.request(mode, endpoint)
             if mode in {'PUT', 'POST'}:
-                connection.request(mode, address, json.dumps(data))
-            logger.debug("%s %s %s", mode, address, str(data))
+                connection.request(mode, endpoint, json.dumps(data))
+            logger.debug("%s %s %s", mode, endpoint, str(data))
         except socket.timeout:  # handle a socket timeout
-            error = "{} Request to {}{} timed out.".format(mode, self.ip_address, address)
+            error = f"{mode} Request to {self.ip_address}{endpoint} timed out."
             logger.exception(error)
             raise PhueRequestTimeout(None, error)
         # parse the response data and close the connection
