@@ -65,44 +65,46 @@
   <!-- show the lights -->
   <div class="cards">
   {% for light in lights %}
-  <div class="card hue-light-card">
+  <div class="card horizontal hue-light-card">
+
     <button class="card-image waves-effect waves-block waves-light jscolor {valueElement:null,value:'{{light.color_hex}}',onFineChange:'set_light_color({{ light.light_id }}, this)'} color-button">
       <img class="activator" src="{{ url_for('static', filename='img/hue/' + light.config['archetype'] + '.svg') }}">
     </button>
-    <span class="card-title">{{ light.name }}</span>
-    <div class="card-content">
-      <!-- <p>{{ light.manufacturername }}</p> -->
-      <!-- <p>rgb {{ light.color }} </p> -->
-      <!-- <p>on {{ light.on }} </p> -->
-      <!-- <p>colormode {{ light.colormode }} </p> -->
-      <!-- <p>brightness {{ light.brightness }} </p> -->
-      <!-- <p>hue {{ light.hue }} </p> -->
-      <!-- <p>saturation {{ light.saturation }} </p> -->
-      <!-- <p>xy {{ light.xy }} </p> -->
-      <!-- <p>effect {{ light.effect }} </p> -->
-      <!-- <p>alert {{ light.alert }} </p> -->
-      <!-- <p>reachable {{ light.reachable }} </p> -->
-      <!-- <p>uniqueid {{ light.uniqueid }} </p> -->
-      <!-- <p>modelid {{ light.modelid }} </p> -->
-      <!-- <p>manufacturername {{ light.manufacturername }} </p> -->
-      <!-- <p>productname {{ light.productname }} </p> -->
-      <!-- <p>type {{ light.type }} </p> -->
-      <!-- <p>config {{ light.config }} </p> -->
-      <!-- <p>capabilities {{ light.capabilities }} </p> -->
-      <div class="switch">
-        <label>
-          <input {% if light.on %}checked{% else %}{% endif %} type="checkbox" onclick="set_light_on({{ light.light_id }}, this)">
-          <span class="lever"></span>
-        </label>
-      </div>
 
-      <span class="card-subtitle">Brightness</span>
-      <form action="#">
-        <p class="range-field">
-          <input type="range" value="{{ light.brightness }}" min="0" max="254" onchange="set_light({{ light.light_id }}, 'bri', this.value)"/>
-        </p>
-      </form>
+    <div class="hue-light-card-content">
+      <!-- the name of the light -->
+      <div>
+        <span class="card-title">
+          {{ light.name }}
+          <button class="right card-image waves-effect waves-light btn-floating grey" onclick="alert('TODO')" style="margin-top: 5px;">
+            <i class="material-icons">more_vert</i>
+          </button>
+        </span>
+      </div>
+      <!-- the make of the light -->
+      <div>
+        <span class="card-subtitle">{{ light.manufacturername.title() }} {{ light.productname.title() }}</span>
+      </div>
+      <!-- the control block -->
+      <div class="hue-light-card-control">
+        <!-- the power switch -->
+        <div style="display: inline-block;">
+          <div class="switch">
+            <label>
+              <input {% if light.on %}checked{% else %}{% endif %} type="checkbox" onclick="set_light_on({{ light.light_id }}, this)">
+              <span class="lever"></span>
+            </label>
+          </div>
+        </div>
+        <!-- the brightness slider -->
+        <div style="display: inline-block;">
+          <div class="range-field">
+            <input type="range" value="{{ light.brightness }}" min="0" max="254" onchange="set_light({{ light.light_id }}, 'bri', this.value)"/>
+          </div>
+        </div>
+      </div>
     </div>
+
   </div>
   {% endfor %}
   </div>
