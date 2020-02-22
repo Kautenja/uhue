@@ -161,7 +161,7 @@ def hue_lights():
     data = flask.request.json
     if data['parameter'] == 'color':
         rgb = hex_to_rgb(data['value'].lstrip('#'))
-        bridge[int(data['light_id'])].color = rgb
+        bridge.get_light_objects(mode='id')[int(data['light_id'])].color = rgb
         return 'set value'
     if data['parameter'] == 'on':
         data['value'] = bool(data['value'])
