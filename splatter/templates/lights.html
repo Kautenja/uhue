@@ -62,12 +62,6 @@
     <li><a href="/animations">Animations</a></li>
   </ul>
 
-
-
-
-
-
-
   <!-- show the lights -->
   <div class="cards">
   {% for light in lights %}
@@ -87,7 +81,7 @@
         <span class="card-subtitle">{{ light.manufacturername.title() }} {{ light.productname.title() }}</span>
       </div>
       <!-- the control block -->
-      <div class="control-light">
+      <div class="hue-light-card-control">
         <!-- the power switch -->
         <div style="display: inline-block;">
           <div class="switch">
@@ -99,11 +93,9 @@
         </div>
         <!-- the brightness slider -->
         <div style="display: inline-block;">
-          <form action="#">
-            <p class="range-field">
-              <input type="range" value="{{ light.brightness }}" min="0" max="254" onchange="set_light({{ light.light_id }}, 'bri', this.value)"/>
-            </p>
-          </form>
+          <div class="range-field">
+            <input type="range" value="{{ light.brightness }}" min="0" max="254" onchange="set_light({{ light.light_id }}, 'bri', this.value)"/>
+          </div>
         </div>
       </div>
     </div>
