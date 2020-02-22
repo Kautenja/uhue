@@ -70,15 +70,6 @@
     </button>
     <span class="card-title">{{ group.name }}</span>
     <div class="card-content">
-      <!-- <p>rgb {{ group.color }} </p> -->
-      <!-- <p>on {{ group.on }} </p> -->
-      <!-- <p>colormode {{ group.colormode }} </p> -->
-      <!-- <p>brightness {{ group.brightness }} </p> -->
-      <!-- <p>hue {{ group.hue }} </p> -->
-      <!-- <p>saturation {{ group.saturation }} </p> -->
-      <!-- <p>xy {{ group.xy }} </p> -->
-      <!-- <p>effect {{ group.effect }} </p> -->
-      <!-- <p>alert {{ group.alert }} </p> -->
       <div class="switch">
         <label>
           <input {% if group.on %}checked{% else %}{% endif %} type="checkbox" onclick="set_group_on({{ group.group_id }}, this)">
