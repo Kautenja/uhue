@@ -33,9 +33,8 @@ class Group(Light):
     """
 
     def __init__(self, bridge, group_id):
-        Light.__init__(self, bridge, None)
+        super().__init__(bridge, None)
         del self.light_id  # not relevant for a group
-
         try:
             self.group_id = int(group_id)
         except:
@@ -58,8 +57,7 @@ class Group(Light):
         # transition time...
         if self.transitiontime is not None:
             kwargs['transitiontime'] = self.transitiontime
-            logger.debug("Setting with transitiontime = {0} ds = {1} s".format(
-                self.transitiontime, float(self.transitiontime) / 10))
+            logger.debug("Setting with transitiontime = %f ds = %f s", self.transitiontime, float(self.transitiontime) / 10)
 
             if (args[0] == 'on' and args[1] is False) or (
                     kwargs.get('on', True) is False):
@@ -75,20 +73,20 @@ class Group(Light):
     def name(self, value):
         old_name = self.name
         self._name = value
-        logger.debug("Renaming light group from '{0}' to '{1}'".format(
-            old_name, value))
+        logger.debug("Renaming light group from '%s' to '%s'", old_name, value)
         self._set('name', self._name)
 
     @property
     def lights(self):
         """ Return a list of all lights in this group"""
-        # response = self.bridge.request('GET', '/api/{0}/groups/{1}'.format(self.bridge.username, self.group_id))
-        # return [Light(self.bridge, int(l)) for l in response['lights']]
         return [Light(self.bridge, int(l)) for l in self._get('lights')]
 
     @lights.setter
     def lights(self, value):
         """ Change the lights that are in this group"""
-        logger.debug("Setting lights in group {0} to {1}".format(
-            self.group_id, str(value)))
+        logger.debug("Setting lights in group %d to %s", self.group_id, value)
         self._set('lights', value)
+
+
+# explicitly define the outward facing API of this module
+__all__ = [Group.__name__]

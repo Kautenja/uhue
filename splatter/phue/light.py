@@ -15,7 +15,7 @@ class Light:
 
         self._name = None
         self._on = None
-        self._brightness = None
+        self._bri = None
         self._colormode = None
         self._hue = None
         self._saturation = None
@@ -26,15 +26,20 @@ class Light:
         self.transitiontime = None  # default
         self._reset_bri_after_on = None
         self._reachable = None
+        self._uniqueid = None
+        self._modelid = None
         self._type = None
+        self._manufacturername = None
+        self._productname = None
+        self._swversion = None
+        self._swupdate = None
+        self._capabilities = None
+        self._config = None
+        self._state = None
 
     def __repr__(self):
         # like default python repr function, but add light name
-        return '<{0}.{1} object "{2}" at {3}>'.format(
-            self.__class__.__module__,
-            self.__class__.__name__,
-            self.name,
-            hex(id(self)))
+        return f'<{self.__class__.__module__}.{self.__class__.__name__} object "{self.name}" at {hex(id(self))}>'
 
     # Wrapper functions for get/set through the bridge, adding support for
     # remembering the transitiontime parameter if the user has set it
@@ -44,8 +49,7 @@ class Light:
     def _set(self, *args, **kwargs):
         if self.transitiontime is not None:
             kwargs['transitiontime'] = self.transitiontime
-            logger.debug("Setting with transitiontime = {0} ds = {1} s".format(
-                self.transitiontime, float(self.transitiontime) / 10))
+            logger.debug("Setting with transitiontime = %f ds = %f s", self.transitiontime, float(self.transitiontime) / 10)
 
             if (args[0] == 'on' and args[1] is False) or (
                     kwargs.get('on', True) is False):
@@ -63,8 +67,7 @@ class Light:
         self._name = value
         self._set('name', self._name)
 
-        logger.debug("Renaming light from '{0}' to '{1}'".format(
-            old_name, value))
+        logger.debug("Renaming light from '%s' to '%s'", old_name, value)
 
         self.bridge.lights_by_name[self.name] = self
         del self.bridge.lights_by_name[old_name]
@@ -88,17 +91,15 @@ class Light:
         if self._on and value is False:
             self._reset_bri_after_on = self.transitiontime is not None
             if self._reset_bri_after_on:
-                logger.warning(
-                    'Turned off light with transitiontime specified, brightness will be reset on power on')
+                logger.warninging('Turned off light with transitiontime specified, brightness will be reset on power on')
 
         self._set('on', value)
 
         # work around bug by resetting brightness after a power on
         if self._on is False and value is True:
             if self._reset_bri_after_on:
-                logger.warning(
-                    'Light was turned off with transitiontime specified, brightness needs to be reset now.')
-                self.brightness = self._brightness
+                logger.warninging('Light was turned off with transitiontime specified, brightness needs to be reset now.')
+                self.brightness = self._bri
                 self._reset_bri_after_on = False
 
         self._on = value
@@ -115,13 +116,13 @@ class Light:
 
         0 is not off'''
 
-        self._brightness = self._get('bri')
-        return self._brightness
+        self._bri = self._get('bri')
+        return self._bri
 
     @brightness.setter
     def brightness(self, value):
-        self._brightness = value
-        self._set('bri', self._brightness)
+        self._bri = value
+        self._set('bri', self._bri)
 
     @property
     def hue(self):
@@ -172,9 +173,9 @@ class Light:
     @colortemp.setter
     def colortemp(self, value):
         if value < 154:
-            logger.warn('154 mireds is coolest allowed color temp')
+            logger.warning('154 mireds is coolest allowed color temp')
         elif value > 500:
-            logger.warn('500 mireds is warmest allowed color temp')
+            logger.warning('500 mireds is warmest allowed color temp')
         self._colortemp = value
         self._set('ct', self._colortemp)
 
@@ -187,14 +188,14 @@ class Light:
     @colortemp_k.setter
     def colortemp_k(self, value):
         if value > 6500:
-            logger.warn('6500 K is max allowed color temp')
+            logger.warning('6500 K is max allowed color temp')
             value = 6500
         elif value < 2000:
-            logger.warn('2000 K is min allowed color temp')
+            logger.warning('2000 K is min allowed color temp')
             value = 2000
 
         colortemp_mireds = int(round(1e6 / value))
-        logger.debug("{0:d} K is {1} mireds".format(value, colortemp_mireds))
+        logger.debug("%d{0:} K is %d mireds", value, colortemp_mireds)
         self.colortemp = colortemp_mireds
 
     @property
@@ -316,3 +317,7 @@ class Light:
     def color_hex(self):
         """Return the color in hex format."""
         return '%02x%02x%02x' % self.color
+
+
+# explicitly define the outward facing API of this module
+__all__ = [Light.__name__]
