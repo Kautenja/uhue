@@ -1,7 +1,8 @@
 """The splatter web application"""
 import os
 import flask
-from . import phue
+from . import philips_hue
+from .util import hex_to_rgb
 
 
 # create the Flask web server
@@ -9,18 +10,10 @@ app = flask.Flask(__name__)
 
 
 # create the connection to the Hue bridge
-bridge = phue.Bridge()
+bridge = philips_hue.Bridge()
 # check for a configuration file and load it
 if bridge.has_config_file:
     bridge.load_config_file()
-
-
-# TODO: move to utility module
-def hex_to_rgb(value: str) -> tuple:
-    """Convert a hexadecimal string to an RGB tuple."""
-    hlen = len(value)
-    step = hlen // 3
-    return tuple(int(value[i : i + step], 16) for i in range(0, hlen, step))
 
 
 # ----------------------------------------------------------------------------
@@ -87,7 +80,7 @@ def home():
 
 def render_register_page():
     """TODO."""
-    bridge.ip_address = phue.find_bridge()
+    bridge.ip_address = philips_hue.find_bridge()
     if bridge.ip_address is None:  # TODO: bridge not found page
         return 400
     return flask.render_template("register.html", ip_address=bridge.ip_address)
@@ -148,7 +141,7 @@ def register():
     """Return the home page."""
     try:
         bridge.register()
-    except phue.PhueRegistrationException:
+    except philips_hue.PhueRegistrationException:
         return {'PhueRegistrationException': 0}
     # return {'redirect': '/'}
     # TODO: test this
