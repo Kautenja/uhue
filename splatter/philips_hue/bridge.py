@@ -1,18 +1,15 @@
 """An interface to the Hue ZigBee bridge."""
 import os
 import json
-import logging
 import platform
 import socket
 from http.client import HTTPConnection
+from .logger import logger
 from .exceptions import PhueException, PhueRegistrationException, PhueRequestTimeout
 from .group import Group
 from .light import Light
 from .scene import Scene
 from .sensor import Sensor
-
-
-logger = logging.getLogger('philips_hue')
 
 
 # the default name for the configuration file

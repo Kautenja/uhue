@@ -1,10 +1,7 @@
 """A method to interact with the Philips Hue UPnP Service."""
 import json
-import logging
+from .logger import logger
 from http.client import HTTPSConnection
-
-
-logger = logging.getLogger('philips_hue')
 
 
 def find_bridge():

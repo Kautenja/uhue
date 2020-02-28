@@ -1,8 +1,4 @@
 """A container for a scene."""
-import logging
-
-
-logger = logging.getLogger('philips_hue')
 
 
 class Scene:

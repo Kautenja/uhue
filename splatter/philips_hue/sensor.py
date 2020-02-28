@@ -1,8 +1,5 @@
 """A Hue sensor object."""
-import logging
-
-
-logger = logging.getLogger('philips_hue')
+from .logger import logger
 
 
 class SensorState(dict):

@@ -1,9 +1,6 @@
 """A group of hue lights tracked by the bridge."""
-import logging
+from .logger import logger
 from .light import Light
-
-
-logger = logging.getLogger('philips_hue')
 
 
 # TODO: can't access "reachable"

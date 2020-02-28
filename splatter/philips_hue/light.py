@@ -1,9 +1,6 @@
 """A Hue light object."""
-import logging
+from .logger import logger
 from .colors import xy_bri_to_rgb, rgb_to_xy_bri
-
-
-logger = logging.getLogger('philips_hue')
 
 
 class Light:
