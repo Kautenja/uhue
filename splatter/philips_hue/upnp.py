@@ -4,7 +4,7 @@ import logging
 from http.client import HTTPSConnection
 
 
-logger = logging.getLogger('phue')
+logger = logging.getLogger('philips_hue')
 
 
 def find_bridge():

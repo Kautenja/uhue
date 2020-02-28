@@ -12,7 +12,7 @@ from .scene import Scene
 from .sensor import Sensor
 
 
-logger = logging.getLogger('phue')
+logger = logging.getLogger('philips_hue')
 
 
 # the default name for the configuration file

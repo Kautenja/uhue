@@ -3,7 +3,7 @@ import logging
 from .light import Light
 
 
-logger = logging.getLogger('phue')
+logger = logging.getLogger('philips_hue')
 
 
 # TODO: can't access "reachable"

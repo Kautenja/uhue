@@ -2,7 +2,7 @@
 import logging
 
 
-logger = logging.getLogger('phue')
+logger = logging.getLogger('philips_hue')
 
 
 class SensorState(dict):
