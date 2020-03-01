@@ -7,6 +7,7 @@ class SensorState(dict):
 
     def __init__(self, bridge, sensor_id):
         """TODO."""
+        super().__init__()
         self._bridge = bridge
         self._sensor_id = sensor_id
 
@@ -20,6 +21,7 @@ class SensorConfig(dict):
 
     def __init__(self, bridge, sensor_id):
         """TODO."""
+        super().__init__()
         self._bridge = bridge
         self._sensor_id = sensor_id
 
