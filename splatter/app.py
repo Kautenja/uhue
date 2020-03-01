@@ -1,4 +1,4 @@
-"""The splatter web application"""
+"""The web application."""
 import os
 import flask
 from . import philips_hue
