@@ -1,4 +1,4 @@
-<h1><img src="uhue/static/img/logo.png" width="30px" height="30px"/>uhue</h1>
+<h1><img src="design/weblogo.png" height="70px"/></h1>
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
