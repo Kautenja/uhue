@@ -22,6 +22,12 @@ nav.navbar-material {
 /* 64px is the navar height, add some padding */
 .navbar-material .nav-wrapper .brand-logo img {
   height: 54px;
+  user-drag: none;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 .navbar-material .nav-wrapper .button-collapse i {
@@ -32,5 +38,11 @@ nav.navbar-material {
 @media (max-width: 600px) {
   .navbar-material .nav-wrapper .brand-logo img {
     height: 46px;
+    user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
   }
 }
