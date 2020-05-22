@@ -3,7 +3,7 @@
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 
-uhue is a simple [Philips Hue](https://www2.meethue.com/en-us) web application powered by a centralized server (e.g., a [Raspberry Pi](https://www.raspberrypi.org)). uhue is divided into (1) a front-end powered by [materialize.css](https://materializecss.com) components and (2) a backend that powered by [Flask](https://palletsprojects.com/p/flask/) that servers pages and data, as well as communicates with the Hue Bridge.
+uhue is a simple [Philips Hue](https://www2.meethue.com/en-us) web application powered by a centralized server (e.g., a [Raspberry Pi](https://www.raspberrypi.org)). uhue is divided into (1) a front-end powered by [materialize.css](https://materializecss.com) components and (2) a backend that powered by [Flask](https://palletsprojects.com/p/flask/) that serves pages and data, and communicates with the Hue Bridge.
 
 ## Road Map
 
