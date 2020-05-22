@@ -181,3 +181,23 @@ def hue_groups():
         data['value'] = int(data['value'])
     bridge.set_group(int(data['group_id']), data['parameter'], data['value'])
     return 'set value'
+
+
+
+
+
+
+
+
+
+# from flask import request
+# def shutdown_server():
+#     func = request.environ.get('werkzeug.server.shutdown')
+#     if func is None:
+#         raise RuntimeError('Not running with the Werkzeug Server')
+#     func()
+
+# @app.route('/shutdown', methods=['GET'])
+# def shutdown():
+#     shutdown_server()
+#     return 'Server shutting down...'
